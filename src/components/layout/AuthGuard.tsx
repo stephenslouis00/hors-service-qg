@@ -21,7 +21,10 @@ export function AuthGuard() {
     )
   }
 
-  if (!entered) {
+  // Also gate on `user`: right after a rejected sign-in, `entered` can still be
+  // true for one render while `user` is null (before the effect above resets
+  // it) — without this, the protected app shell would flash briefly.
+  if (!entered || !user) {
     return <LoginPage onContinue={() => setEntered(true)} />
   }
 

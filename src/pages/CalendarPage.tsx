@@ -35,12 +35,15 @@ import {
 
 type FilterKind = 'show' | 'promo-event' | 'promo-content' | 'release'
 
-const FILTERS: { kind: FilterKind; label: string; tone: Tone }[] = [
-  { kind: 'show', label: '🎤 Concerts', tone: 'green' },
-  { kind: 'promo-event', label: '📣 Événements promo', tone: 'blue' },
-  { kind: 'promo-content', label: '🎬 Contenus', tone: 'purple' },
-  { kind: 'release', label: '💿 Sorties', tone: 'yellow' },
-]
+// A Record (not array+find) so TypeScript enforces every FilterKind has metadata —
+// no non-null assertions needed to look it up.
+const FILTER_META: Record<FilterKind, { label: string; tone: Tone }> = {
+  show: { label: '🎤 Concerts', tone: 'green' },
+  'promo-event': { label: '📣 Événements promo', tone: 'blue' },
+  'promo-content': { label: '🎬 Contenus', tone: 'purple' },
+  release: { label: '💿 Sorties', tone: 'yellow' },
+}
+const FILTER_KINDS: FilterKind[] = ['show', 'promo-event', 'promo-content', 'release']
 
 export function CalendarPage() {
   const { events } = usePromoCalendarEvents()
@@ -62,7 +65,7 @@ export function CalendarPage() {
   const [syncingAll, setSyncingAll] = useState(false)
   const [syncAllError, setSyncAllError] = useState<string | null>(null)
 
-  const [activeFilters, setActiveFilters] = useState<Set<FilterKind>>(new Set(FILTERS.map((f) => f.kind)))
+  const [activeFilters, setActiveFilters] = useState<Set<FilterKind>>(new Set(FILTER_KINDS))
   const [dayPickerDate, setDayPickerDate] = useState<string | undefined>()
   const [showCreateEvent, setShowCreateEvent] = useState(false)
   const [showCreateShow, setShowCreateShow] = useState(false)
@@ -238,9 +241,9 @@ export function CalendarPage() {
       {syncAllError && <p className="mb-3 text-xs text-red-600 dark:text-red-400">{syncAllError}</p>}
 
       <div className="mb-4 flex flex-wrap gap-1.5">
-        {FILTERS.map((f) => (
-          <button key={f.kind} onClick={() => toggleFilter(f.kind)} className={activeFilters.has(f.kind) ? '' : 'opacity-40'}>
-            <StatusPill label={f.label} tone={f.tone} />
+        {FILTER_KINDS.map((kind) => (
+          <button key={kind} onClick={() => toggleFilter(kind)} className={activeFilters.has(kind) ? '' : 'opacity-40'}>
+            <StatusPill label={FILTER_META[kind].label} tone={FILTER_META[kind].tone} />
           </button>
         ))}
       </div>
@@ -262,10 +265,7 @@ export function CalendarPage() {
           {allDated.map((entry) => (
             <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
               <TableCell>
-                <StatusPill
-                  label={FILTERS.find((f) => f.kind === entry.kind)!.label}
-                  tone={FILTERS.find((f) => f.kind === entry.kind)!.tone}
-                />
+                <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
               </TableCell>
               <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
                 {entry.title}
@@ -392,11 +392,12 @@ export function CalendarPage() {
               endAt={selectedShow.date}
               allDay
               googleEventId={user?.email ? selectedShow.googleEventId?.[user.email] : undefined}
-              onSynced={(googleEventId) =>
+              onSynced={(googleEventId) => {
+                if (!user?.email) return
                 updateShow(selectedShow.id, {
-                  googleEventId: { ...selectedShow.googleEventId, [user!.email!]: googleEventId },
+                  googleEventId: { ...selectedShow.googleEventId, [user.email]: googleEventId },
                 })
-              }
+              }}
             />
             <div className="flex justify-end">
               <Button
@@ -445,11 +446,12 @@ export function CalendarPage() {
               endAt={selectedEvent.endAt}
               allDay={selectedEvent.allDay}
               googleEventId={user?.email ? selectedEvent.googleEventId?.[user.email] : undefined}
-              onSynced={(googleEventId) =>
+              onSynced={(googleEventId) => {
+                if (!user?.email) return
                 updateEvent(selectedEvent.id, {
-                  googleEventId: { ...selectedEvent.googleEventId, [user!.email!]: googleEventId },
+                  googleEventId: { ...selectedEvent.googleEventId, [user.email]: googleEventId },
                 })
-              }
+              }}
             />
             <div className="flex justify-end">
               <Button

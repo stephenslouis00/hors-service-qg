@@ -48,6 +48,7 @@ export function ProjectDetailPage() {
   const relatedDocs = docs.filter((d) => d.relatedReleaseId === release.id)
 
   async function handleDelete() {
+    // Non-null: only wired up from JSX below, unreachable until the `!release` guard above returns.
     if (!confirm(`Supprimer le projet « ${release!.title} » ? Les morceaux resteront dans Production.`)) return
     await deleteRelease(release!.id)
     navigate('/promotion/projects')

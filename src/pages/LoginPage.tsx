@@ -5,8 +5,12 @@ export function LoginPage({ onContinue }: { onContinue: () => void }) {
   const { user, signIn, wasRejected } = useAuth()
 
   async function handleSignIn() {
-    await signIn()
-    onContinue()
+    try {
+      await signIn()
+      onContinue()
+    } catch {
+      // Popup closed or sign-in failed — the button stays available to retry.
+    }
   }
 
   return (

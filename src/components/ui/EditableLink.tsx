@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { Button } from './Button'
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export function EditableLink({
   url,
   onSave,
@@ -21,10 +30,16 @@ export function EditableLink({
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(url ?? '')
+  const [error, setError] = useState<string | null>(null)
 
   function commit() {
     const trimmed = draft.trim()
+    if (trimmed && !isHttpUrl(trimmed)) {
+      setError('Doit être un lien commençant par http:// ou https://')
+      return
+    }
     setEditing(false)
+    setError(null)
     if (trimmed !== (url ?? '')) onSave(trimmed)
   }
 
@@ -43,13 +58,16 @@ export function EditableLink({
           OK
         </Button>
         <Button onClick={() => setEditing(false)}>Annuler</Button>
+        {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
       </div>
     )
   }
 
+  const isSafeUrl = url && isHttpUrl(url)
+
   return (
     <div className="flex items-center gap-2 text-sm">
-      {url ? (
+      {isSafeUrl ? (
         <a href={url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">
           {icon} {linkLabel}
         </a>
@@ -59,11 +77,12 @@ export function EditableLink({
       <button
         onClick={() => {
           setDraft(url ?? '')
+          setError(null)
           setEditing(true)
         }}
         className="text-xs text-zinc-500 hover:underline dark:text-zinc-400"
       >
-        {url ? 'Modifier' : '+ Ajouter'}
+        {isSafeUrl ? 'Modifier' : '+ Ajouter'}
       </button>
       {createUrl && (
         <a

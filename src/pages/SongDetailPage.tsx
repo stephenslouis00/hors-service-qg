@@ -35,6 +35,8 @@ export function SongDetailPage() {
   }
 
   async function handleStageChange(stage: SongStage) {
+    // Non-null: this handler is only ever wired up from the JSX below, which
+    // isn't reached until the `!song` guard above has already returned.
     await updateSong(song!.id, { status: stage })
   }
 

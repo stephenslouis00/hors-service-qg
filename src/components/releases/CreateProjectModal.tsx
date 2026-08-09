@@ -23,7 +23,7 @@ export function CreateProjectModal({
   const [title, setTitle] = useState('')
   const [releaseDate, setReleaseDate] = useState('')
   const [existingSongIds, setExistingSongIds] = useState<string[]>([])
-  const [newSongTitles, setNewSongTitles] = useState<string[]>([])
+  const [newSongTitles, setNewSongTitles] = useState<{ id: string; title: string }[]>([])
   const [newSongDraft, setNewSongDraft] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -34,12 +34,12 @@ export function CreateProjectModal({
   function addNewSongTitle() {
     const value = newSongDraft.trim()
     if (!value) return
-    setNewSongTitles((current) => [...current, value])
+    setNewSongTitles((current) => [...current, { id: crypto.randomUUID(), title: value }])
     setNewSongDraft('')
   }
 
-  function removeNewSongTitle(index: number) {
-    setNewSongTitles((current) => current.filter((_, i) => i !== index))
+  function removeNewSongTitle(id: string) {
+    setNewSongTitles((current) => current.filter((s) => s.id !== id))
   }
 
   async function handleSubmit() {
@@ -56,7 +56,7 @@ export function CreateProjectModal({
         })
         onCreated?.(releaseRef.id)
       } else {
-        const createdIds = await Promise.all(newSongTitles.map((t) => createSong(t).then((ref) => ref.id)))
+        const createdIds = await Promise.all(newSongTitles.map((s) => createSong(s.title).then((ref) => ref.id)))
         const releaseRef = await createRelease({
           title: title.trim(),
           type,
@@ -143,10 +143,10 @@ export function CreateProjectModal({
               </div>
               {newSongTitles.length > 0 && (
                 <ul className="mt-2 space-y-1">
-                  {newSongTitles.map((t, i) => (
-                    <li key={i} className="flex items-center justify-between rounded bg-zinc-50 px-2 py-1 text-sm dark:bg-zinc-800">
-                      {t}
-                      <button onClick={() => removeNewSongTitle(i)} className="text-xs text-red-600 hover:underline dark:text-red-400">
+                  {newSongTitles.map((s) => (
+                    <li key={s.id} className="flex items-center justify-between rounded bg-zinc-50 px-2 py-1 text-sm dark:bg-zinc-800">
+                      {s.title}
+                      <button onClick={() => removeNewSongTitle(s.id)} className="text-xs text-red-600 hover:underline dark:text-red-400">
                         Retirer
                       </button>
                     </li>
