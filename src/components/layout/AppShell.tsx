@@ -8,7 +8,15 @@ export function AppShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
-    <div className="flex h-screen flex-col">
+    <div
+      className="flex h-screen flex-col"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }}
+    >
       <PwaInstallBanner />
       <TopBar onMenuClick={() => setMobileNavOpen((v) => !v)} />
       <div className="flex min-h-0 flex-1">
@@ -19,7 +27,10 @@ export function AppShell() {
         {mobileNavOpen && (
           <div className="fixed inset-0 z-40 flex md:hidden">
             <div className="absolute inset-0 bg-black/40" onClick={() => setMobileNavOpen(false)} />
-            <div className="relative z-10 w-64 border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-[#0d1117]">
+            <div
+              className="relative z-10 w-64 border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-[#0d1117]"
+              style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
               <Sidebar onNavigate={() => setMobileNavOpen(false)} />
             </div>
           </div>
