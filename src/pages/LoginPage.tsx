@@ -1,15 +1,27 @@
+import { useState } from 'react'
+import { FirebaseError } from 'firebase/app'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/Button'
 
 export function LoginPage({ onContinue }: { onContinue: () => void }) {
   const { user, signIn, wasRejected } = useAuth()
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSignIn() {
+    setError(null)
     try {
       await signIn()
       onContinue()
-    } catch {
-      // Popup closed or sign-in failed — the button stays available to retry.
+    } catch (err) {
+      const code = err instanceof FirebaseError ? err.code : undefined
+      // The user closing the popup themselves isn't an error worth surfacing.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return
+      console.error('Google sign-in failed:', err)
+      setError(
+        code === 'auth/unauthorized-domain'
+          ? "Ce domaine n'est pas autorisé pour la connexion Google (configuration Firebase à corriger)."
+          : 'La connexion à Google a échoué. Réessaie.',
+      )
     }
   }
 
@@ -30,6 +42,12 @@ export function LoginPage({ onContinue }: { onContinue: () => void }) {
       {wasRejected && (
         <div className="relative max-w-sm rounded-md border border-red-400 bg-red-950/80 px-4 py-3 text-sm text-red-200">
           Ce compte Google n'est pas autorisé à accéder à cet espace. Demande à un membre du groupe de t'ajouter.
+        </div>
+      )}
+
+      {error && (
+        <div className="relative max-w-sm rounded-md border border-red-400 bg-red-950/80 px-4 py-3 text-sm text-red-200">
+          {error}
         </div>
       )}
 
