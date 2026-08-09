@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --hs-canvas: #ffffff;
+  --hs-canvas-inset: #f6f8fa;
+  --hs-border: #d1d9e0;
+  --hs-fg: #1f2328;
+  --hs-fg-muted: #59636e;
+  --hs-accent: #0969da;
+}
+
+.dark {
+  color-scheme: dark;
+  --hs-canvas: #0d1117;
+  --hs-canvas-inset: #151b23;
+  --hs-border: #3d444d;
+  --hs-fg: #f0f6fc;
+  --hs-fg-muted: #9198a1;
+  --hs-accent: #4493f8;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--hs-canvas);
+  color: var(--hs-fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code,
+.font-mono {
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
