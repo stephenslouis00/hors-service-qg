@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { doc, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
-import { watchCollection, orderByField } from '../firebase/firestore'
+import { watchCollection, orderByField, updateDocFields } from '../firebase/firestore'
 import type { AllowlistEntry, MemberRole } from '../types/user'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -39,4 +39,8 @@ export function useAddMember() {
 
 export function useRemoveMember() {
   return (email: string) => deleteDoc(doc(db, 'allowlist', email.toLowerCase()))
+}
+
+export function useUpdateMemberRole() {
+  return (email: string, role: MemberRole) => updateDocFields('allowlist', email.toLowerCase(), { role })
 }

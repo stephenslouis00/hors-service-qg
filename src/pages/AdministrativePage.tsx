@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAdminDocs, useCreateAdminDoc, useDeleteAdminDoc } from '../hooks/useDocs'
-import { useAddMember, useAllowlist, useRemoveMember } from '../hooks/useAllowlist'
+import { useAddMember, useAllowlist, useRemoveMember, useUpdateMemberRole } from '../hooks/useAllowlist'
 import { useReleases } from '../hooks/useReleases'
 import { ADMIN_DOC_TYPES, type AdminDocType } from '../types/admin'
+import type { MemberRole } from '../types/user'
 import { DocumentRepo } from '../components/documents/DocumentRepo'
 import { DriveAttachButton } from '../components/documents/DriveAttachButton'
 import type { DrivePickedFile } from '../lib/googleDrive'
@@ -11,7 +12,14 @@ import { Modal } from '../components/ui/Modal'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Card, CardHeader } from '../components/ui/Card'
 import { StatusPill } from '../components/ui/StatusPill'
+import { StatusPillSelect } from '../components/ui/StatusPillSelect'
 import { useAuth } from '../contexts/AuthContext'
+
+// Mirrors the same protection enforced server-side in firestore.rules — the
+// owner account can't be demoted or removed by anyone, including other admins.
+const PROTECTED_OWNER_EMAIL = 'stephenslouis00@gmail.com'
+const MEMBER_ROLES: MemberRole[] = ['member', 'admin']
+const ROLE_LABEL: Record<MemberRole, string> = { member: 'member', admin: 'admin' }
 
 const typeLabels: Record<AdminDocType, string> = {
   contract: 'Contrat',
@@ -130,6 +138,7 @@ function MembersPanel() {
   const { members } = useAllowlist()
   const addMember = useAddMember()
   const removeMember = useRemoveMember()
+  const updateMemberRole = useUpdateMemberRole()
   const { user } = useAuth()
   const [email, setEmail] = useState('')
 
@@ -145,22 +154,37 @@ function MembersPanel() {
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Membres autorisés</h2>
       </CardHeader>
       <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
-        {members.map((member) => (
-          <div key={member.email} className="flex items-center justify-between px-4 py-2.5 text-sm">
-            <span className="text-zinc-700 dark:text-zinc-300">{member.email}</span>
-            <div className="flex items-center gap-2">
-              <StatusPill label={member.role} tone={member.role === 'admin' ? 'purple' : 'gray'} />
-              {member.email !== user?.email && (
-                <button
-                  onClick={() => removeMember(member.email)}
-                  className="text-xs text-red-600 hover:underline dark:text-red-400"
-                >
-                  Retirer
-                </button>
-              )}
+        {members.map((member) => {
+          const isProtected = member.email === PROTECTED_OWNER_EMAIL
+          return (
+            <div key={member.email} className="flex items-center justify-between px-4 py-2.5 text-sm">
+              <span className="text-zinc-700 dark:text-zinc-300">{member.email}</span>
+              <div className="flex items-center gap-2">
+                {isProtected ? (
+                  <span title="Le compte propriétaire ne peut pas être rétrogradé.">
+                    <StatusPill label={ROLE_LABEL[member.role]} tone="purple" />
+                  </span>
+                ) : (
+                  <StatusPillSelect
+                    value={member.role}
+                    options={MEMBER_ROLES}
+                    labelFor={(r) => ROLE_LABEL[r]}
+                    toneFor={(r) => (r === 'admin' ? 'purple' : 'gray')}
+                    onChange={(role) => updateMemberRole(member.email, role)}
+                  />
+                )}
+                {member.email !== user?.email && !isProtected && (
+                  <button
+                    onClick={() => removeMember(member.email)}
+                    className="text-xs text-red-600 hover:underline dark:text-red-400"
+                  >
+                    Retirer
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <div className="flex gap-2 border-t border-zinc-100 p-3 dark:border-zinc-900">
         <input
