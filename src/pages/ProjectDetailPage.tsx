@@ -118,8 +118,8 @@ export function ProjectDetailPage() {
               shareWithEmails={shareWithEmails}
               onRename={(title) => updateContent(item.id, { title })}
               onStatusChange={(status) => updateContent(item.id, { status })}
-              onAttachDrive={(url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
-              onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
+              onAttachDrive={(file) => updateContent(item.id, { driveLinks: [...item.driveLinks, { url: file.url, name: file.name }] })}
+              onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
               onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
             />
           ))}

@@ -4,13 +4,18 @@ export type PromoContentType = (typeof PROMO_CONTENT_TYPES)[number]
 export const PROMO_CONTENT_STATUSES = ['idea', 'in-progress', 'review', 'scheduled', 'published'] as const
 export type PromoContentStatus = (typeof PROMO_CONTENT_STATUSES)[number]
 
+export interface DriveLink {
+  url: string
+  name: string
+}
+
 export interface PromoContentItem {
   id: string
   title: string
   type: PromoContentType
   status: PromoContentStatus
   releaseId: string | null
-  driveLinks: string[]
+  driveLinks: DriveLink[]
   publishDate: number | null
   notes: string
   createdAt: number

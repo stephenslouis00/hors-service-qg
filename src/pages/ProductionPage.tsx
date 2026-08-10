@@ -121,8 +121,8 @@ export function ProductionPage() {
               <TableHeaderCell />
               <TableHeaderCell>Titre</TableHeaderCell>
               <TableHeaderCell>Statut</TableHeaderCell>
-              <TableHeaderCell>Date de sortie</TableHeaderCell>
               <TableHeaderCell>SACEM</TableHeaderCell>
+              <TableHeaderCell>Date de sortie</TableHeaderCell>
             </TableHead>
             <tbody>
               <SortableContext items={rows.map(rowId)} strategy={verticalListSortingStrategy}>
@@ -228,10 +228,10 @@ function FolderRow({
       <TableCell>
         <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
       </TableCell>
+      <TableCell className="text-zinc-400">—</TableCell>
       <TableCell className="text-zinc-500 dark:text-zinc-400">
         {songCount} morceau{songCount > 1 ? 'x' : ''}
       </TableCell>
-      <TableCell className="text-zinc-400">—</TableCell>
     </tr>
   )
 }
@@ -268,8 +268,8 @@ function NestedSongRow({
       <TableCell>
         <StatusPill label={songStageLabel[song.status]} tone={songStageTone[song.status]} />
       </TableCell>
-      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
       <SacemCell checked={Boolean(song.sacemDeposited)} onToggle={onToggleSacem} />
+      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
     </tr>
   )
 }
@@ -304,8 +304,8 @@ function FlatSongRow({
       <TableCell>
         <StatusPill label={songStageLabel[song.status]} tone={songStageTone[song.status]} />
       </TableCell>
-      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
       <SacemCell checked={Boolean(song.sacemDeposited)} onToggle={onToggleSacem} />
+      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
     </tr>
   )
 }

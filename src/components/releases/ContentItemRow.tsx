@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { EditableText } from '../ui/EditableText'
 import { StatusPillSelect } from '../ui/StatusPillSelect'
 import { DriveAttachButton } from '../documents/DriveAttachButton'
+import type { DrivePickedFile } from '../../lib/googleDrive'
 import { PROMO_CONTENT_STATUSES, type PromoContentItem, type PromoContentStatus } from '../../types/promo'
 import { promoContentTone, promoContentTypeIcon, promoContentTypeLabel } from '../../lib/statusTone'
 import { formatDate, dateInputValue, parseDateInputValue } from '../../lib/dates'
@@ -27,7 +28,7 @@ export function ContentItemRow({
   shareWithEmails: string[]
   onRename: (title: string) => void
   onStatusChange: (status: PromoContentStatus) => void
-  onAttachDrive: (url: string) => void
+  onAttachDrive: (file: DrivePickedFile) => void
   onRemoveDrive: (url: string) => void
   onPublishDateChange: (date: number | null) => void
 }) {
@@ -95,21 +96,22 @@ export function ContentItemRow({
           </button>
           {filesOpen && (
             <div
-              className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-[#151b23]"
+              className="absolute right-0 top-full z-10 mt-1 w-64 rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-[#151b23]"
               onMouseLeave={() => setFilesOpen(false)}
             >
-              {item.driveLinks.map((url, i) => (
-                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+              {item.driveLinks.map((link) => (
+                <div key={link.url} className="flex items-center gap-1 px-1.5 py-0.5 hover:bg-zinc-50 dark:hover:bg-zinc-800">
                   <a
-                    href={url}
+                    href={link.url}
                     target="_blank"
                     rel="noreferrer"
+                    title={link.name}
                     className="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 dark:text-blue-400"
                   >
-                    📎 Fichier {item.driveLinks.length > 1 ? i + 1 : ''}
+                    📎 {link.name}
                   </a>
                   <button
-                    onClick={() => onRemoveDrive(url)}
+                    onClick={() => onRemoveDrive(link.url)}
                     title="Retirer ce fichier"
                     aria-label="Retirer ce fichier"
                     className="shrink-0 rounded px-1.5 py-1 text-xs text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
@@ -123,7 +125,7 @@ export function ContentItemRow({
         </div>
       )}
 
-      <DriveAttachButton compact shareWithEmails={shareWithEmails} onPicked={(file) => onAttachDrive(file.url)} />
+      <DriveAttachButton compact shareWithEmails={shareWithEmails} onPicked={onAttachDrive} />
     </div>
   )
 }

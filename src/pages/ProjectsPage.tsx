@@ -15,6 +15,7 @@ import { useCreatePromoContent, usePromoContent, useUpdatePromoContent } from '.
 import { useSongs } from '../hooks/useSongs'
 import { useAllowlist } from '../hooks/useAllowlist'
 import { useAuth } from '../contexts/AuthContext'
+import type { DrivePickedFile } from '../lib/googleDrive'
 import { PROMO_CONTENT_TYPES, type PromoContentItem, type PromoContentStatus, type PromoContentType, type Release } from '../types/promo'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -109,8 +110,8 @@ export function ProjectsPage() {
                 onRenameContent={(id, title) => updateContent(id, { title })}
                 onStatusChange={(id, status) => updateContent(id, { status })}
                 onPinterestSave={(url) => updateRelease(release.id, { pinterestUrl: url })}
-                onAttachDrive={(item, url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
-                onRemoveDrive={(item, url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
+                onAttachDrive={(item, file) => updateContent(item.id, { driveLinks: [...item.driveLinks, { url: file.url, name: file.name }] })}
+                onRemoveDrive={(item, url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
                 onPublishDateChange={(id, date) => updateContent(id, { publishDate: date })}
               />
             ))}
@@ -136,8 +137,8 @@ export function ProjectsPage() {
                     shareWithEmails={shareWithEmails}
                     onRename={(title) => updateContent(item.id, { title })}
                     onStatusChange={(status) => updateContent(item.id, { status })}
-                    onAttachDrive={(url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
-                    onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
+                    onAttachDrive={(file) => updateContent(item.id, { driveLinks: [...item.driveLinks, { url: file.url, name: file.name }] })}
+                    onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
                     onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
                   />
                 ))}
@@ -196,7 +197,7 @@ function ProjectFolder({
   onRenameContent: (id: string, title: string) => void
   onStatusChange: (id: string, status: PromoContentStatus) => void
   onPinterestSave: (url: string) => void
-  onAttachDrive: (item: PromoContentItem, url: string) => void
+  onAttachDrive: (item: PromoContentItem, file: DrivePickedFile) => void
   onRemoveDrive: (item: PromoContentItem, url: string) => void
   onPublishDateChange: (id: string, date: number | null) => void
 }) {
@@ -267,7 +268,7 @@ function ProjectFolder({
                 shareWithEmails={shareWithEmails}
                 onRename={(title) => onRenameContent(item.id, title)}
                 onStatusChange={(status) => onStatusChange(item.id, status)}
-                onAttachDrive={(url) => onAttachDrive(item, url)}
+                onAttachDrive={(file) => onAttachDrive(item, file)}
                 onRemoveDrive={(url) => onRemoveDrive(item, url)}
                 onPublishDateChange={(date) => onPublishDateChange(item.id, date)}
               />
