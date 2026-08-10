@@ -4,7 +4,7 @@ import clsx from 'clsx'
 type Variant = 'primary' | 'default' | 'danger' | 'ghost'
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-green-600 text-white border-green-700 hover:bg-green-700',
+  primary: 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700',
   default:
     'bg-zinc-50 text-zinc-900 border-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-700',
   danger: 'bg-red-600 text-white border-red-700 hover:bg-red-700',

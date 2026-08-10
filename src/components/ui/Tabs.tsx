@@ -18,7 +18,7 @@ export function Tabs({ items }: { items: TabItem[] }) {
             className={({ isActive }) =>
               'border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ' +
               (isActive
-                ? 'border-orange-500 text-zinc-900 dark:text-zinc-50'
+                ? 'border-blue-500 text-zinc-900 dark:text-zinc-50'
                 : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100')
             }
           >

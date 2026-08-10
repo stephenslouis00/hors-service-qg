@@ -7,6 +7,7 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { ActivityFeed } from '../components/activity/ActivityFeed'
 import { FeedbackComposer } from '../components/activity/FeedbackComposer'
 import { DriveAttachButton } from '../components/documents/DriveAttachButton'
+import { PaperclipIcon } from '../components/layout/icons'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { songStageLabel, songStageTone } from '../lib/statusTone'
@@ -93,7 +94,15 @@ export function SongDetailPage() {
           <span className="text-zinc-500 dark:text-zinc-500">Aucun fichier attaché</span>
         )}
         <DriveAttachButton
-          label={song.driveFolderUrl ? '↻ Remplacer' : '📎 Attacher depuis Drive'}
+          label={
+            song.driveFolderUrl ? (
+              '↻ Remplacer'
+            ) : (
+              <>
+                <PaperclipIcon /> Attacher depuis Drive
+              </>
+            )
+          }
           shareWithEmails={members.map((m) => m.email).filter((email) => email !== user?.email)}
           onPicked={(file) => updateSong(song.id, { driveFolderUrl: file.url })}
         />

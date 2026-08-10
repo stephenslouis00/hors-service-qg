@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, type ComponentType, type SVGProps } from 'react'
 import { EditableText } from '../ui/EditableText'
 import { StatusPillSelect } from '../ui/StatusPillSelect'
 import { DriveAttachButton } from '../documents/DriveAttachButton'
+import { CalendarIcon, FileIcon, ImageIcon, PaperclipIcon, PencilIcon, VideoIcon } from '../layout/icons'
 import type { DrivePickedFile } from '../../lib/googleDrive'
-import { PROMO_CONTENT_STATUSES, type PromoContentItem, type PromoContentStatus } from '../../types/promo'
-import { promoContentTone, promoContentTypeIcon, promoContentTypeLabel } from '../../lib/statusTone'
+import { PROMO_CONTENT_STATUSES, type PromoContentItem, type PromoContentStatus, type PromoContentType } from '../../types/promo'
+import { promoContentTone, promoContentTypeLabel } from '../../lib/statusTone'
 import { formatDate, dateInputValue, parseDateInputValue } from '../../lib/dates'
 
 const CONTENT_STATUS_LABEL: Record<PromoContentStatus, string> = {
@@ -13,6 +14,13 @@ const CONTENT_STATUS_LABEL: Record<PromoContentStatus, string> = {
   review: 'À valider',
   scheduled: 'Programmé',
   published: 'Publié',
+}
+
+const CONTENT_TYPE_ICON: Record<PromoContentType, ComponentType<SVGProps<SVGSVGElement>>> = {
+  video: VideoIcon,
+  photo: ImageIcon,
+  post: PencilIcon,
+  other: FileIcon,
 }
 
 export function ContentItemRow({
@@ -43,10 +51,12 @@ export function ContentItemRow({
     .filter(Boolean)
     .join(' · ')
 
+  const TypeIcon = CONTENT_TYPE_ICON[item.type]
+
   return (
     <div className="flex items-center gap-2.5 rounded-md border border-zinc-200 p-2 dark:border-zinc-800">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-sm dark:bg-zinc-800">
-        {promoContentTypeIcon[item.type]}
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+        <TypeIcon />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -80,7 +90,7 @@ export function ContentItemRow({
           aria-label="Modifier la date de publication"
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
         >
-          📅
+          <CalendarIcon />
         </button>
       )}
 
@@ -106,9 +116,10 @@ export function ContentItemRow({
                     target="_blank"
                     rel="noreferrer"
                     title={link.name}
-                    className="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 dark:text-blue-400"
+                    className="flex min-w-0 flex-1 items-center gap-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 dark:text-blue-400"
                   >
-                    📎 {link.name}
+                    <PaperclipIcon className="shrink-0" />
+                    <span className="truncate">{link.name}</span>
                   </a>
                   <button
                     onClick={() => onRemoveDrive(link.url)}

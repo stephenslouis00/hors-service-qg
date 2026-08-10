@@ -48,13 +48,6 @@ export const releaseTypeLabel: Record<ReleaseType, string> = {
   album: 'Album',
 }
 
-export const promoContentTypeIcon: Record<PromoContentType, string> = {
-  video: '🎬',
-  photo: '📸',
-  post: '📝',
-  other: '📄',
-}
-
 export const promoContentTypeLabel: Record<PromoContentType, string> = {
   video: 'Vidéo',
   photo: 'Photo',

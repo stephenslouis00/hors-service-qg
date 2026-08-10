@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCreateVenue, useVenues } from '../hooks/useVenues'
+import { useCreateVenue, useDeleteVenue, useUpdateVenue, useVenues } from '../hooks/useVenues'
 import { ContactCard } from '../components/contacts/ContactCard'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -8,6 +8,8 @@ import { EmptyState } from '../components/ui/EmptyState'
 export function VenuesPage() {
   const { venues, loading } = useVenues()
   const createVenue = useCreateVenue()
+  const updateVenue = useUpdateVenue()
+  const deleteVenue = useDeleteVenue()
 
   const [showCreate, setShowCreate] = useState(false)
   const [name, setName] = useState('')
@@ -50,6 +52,8 @@ export function VenuesPage() {
             name={venue.name}
             subtitle={`${venue.city}${venue.contactPerson ? ' · ' + venue.contactPerson : ''}`}
             email={venue.email}
+            onRename={(name) => updateVenue(venue.id, { name })}
+            onDelete={() => deleteVenue(venue.id)}
           />
         ))}
       </div>

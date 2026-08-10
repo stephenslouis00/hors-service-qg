@@ -1,19 +1,24 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useGoogleToken } from '../../hooks/useGoogleToken'
 import { GOOGLE_SCOPES } from '../../firebase/auth'
 import { openDrivePicker, shareFileWithEmails, type DrivePickedFile } from '../../lib/googleDrive'
 import { Button } from '../ui/Button'
+import { PaperclipIcon } from '../layout/icons'
 
 export function DriveAttachButton({
   onPicked,
   shareWithEmails = [],
-  label = '📎 Choisir depuis Drive',
+  label = (
+    <>
+      <PaperclipIcon /> Choisir depuis Drive
+    </>
+  ),
   compact = false,
 }: {
   onPicked: (file: DrivePickedFile) => void
   /** Emails to auto-share the picked file with (typically the allowlist), so nobody hits "access denied". */
   shareWithEmails?: string[]
-  label?: string
+  label?: ReactNode
   /** Renders as a small icon-only button instead of a labeled one, for dense rows. */
   compact?: boolean
 }) {
@@ -54,7 +59,7 @@ export function DriveAttachButton({
         aria-label="Attacher depuis Drive"
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
       >
-        {opening || connecting ? '…' : '📎'}
+        {opening || connecting ? '…' : <PaperclipIcon />}
       </button>
     )
   }

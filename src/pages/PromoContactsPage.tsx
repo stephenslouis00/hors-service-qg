@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useCreatePromoContact, usePromoContacts } from '../hooks/usePromoContacts'
+import { useCreatePromoContact, useDeletePromoContact, usePromoContacts, useUpdatePromoContact } from '../hooks/usePromoContacts'
 import { PROMO_CONTACT_ROLES, type PromoContactRole } from '../types/promo'
 import { ContactCard } from '../components/contacts/ContactCard'
+import { StatusPillSelect } from '../components/ui/StatusPillSelect'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -13,9 +14,18 @@ const roleLabels: Record<PromoContactRole, string> = {
   other: 'Autre',
 }
 
+const roleTone: Record<PromoContactRole, 'blue' | 'purple' | 'green' | 'gray'> = {
+  journalist: 'blue',
+  blog: 'purple',
+  'playlist-curator': 'green',
+  other: 'gray',
+}
+
 export function PromoContactsPage() {
   const { contacts, loading } = usePromoContacts()
   const createContact = useCreatePromoContact()
+  const updateContact = useUpdatePromoContact()
+  const deleteContact = useDeletePromoContact()
 
   const [showCreate, setShowCreate] = useState(false)
   const [name, setName] = useState('')
@@ -49,8 +59,19 @@ export function PromoContactsPage() {
           <ContactCard
             key={contact.id}
             name={contact.name}
-            subtitle={`${roleLabels[contact.role]}${contact.org ? ' · ' + contact.org : ''}`}
+            subtitle={contact.org || undefined}
             email={contact.email}
+            onRename={(name) => updateContact(contact.id, { name })}
+            onDelete={() => deleteContact(contact.id)}
+            extra={
+              <StatusPillSelect
+                value={contact.role}
+                options={PROMO_CONTACT_ROLES}
+                labelFor={(r) => roleLabels[r]}
+                toneFor={(r) => roleTone[r]}
+                onChange={(role) => updateContact(contact.id, { role })}
+              />
+            }
           />
         ))}
       </div>

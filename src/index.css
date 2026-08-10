@@ -5,21 +5,13 @@
 :root {
   color-scheme: light;
   --hs-canvas: #ffffff;
-  --hs-canvas-inset: #f6f8fa;
-  --hs-border: #d1d9e0;
   --hs-fg: #1f2328;
-  --hs-fg-muted: #59636e;
-  --hs-accent: #0969da;
 }
 
 .dark {
   color-scheme: dark;
   --hs-canvas: #0d1117;
-  --hs-canvas-inset: #151b23;
-  --hs-border: #3d444d;
   --hs-fg: #f0f6fc;
-  --hs-fg-muted: #9198a1;
-  --hs-accent: #4493f8;
 }
 
 html,

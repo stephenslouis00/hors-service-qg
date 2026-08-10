@@ -94,7 +94,7 @@ export function CalendarView({
               className={
                 'min-h-24 cursor-pointer bg-white p-1.5 dark:bg-[#0d1117] ' +
                 (!isSameMonth(day, cursor) ? 'opacity-40' : '') +
-                (isSameDay(day, new Date()) ? ' ring-1 ring-inset ring-orange-400' : '')
+                (isSameDay(day, new Date()) ? ' ring-1 ring-inset ring-blue-400' : '')
               }
             >
               <div className="text-[11px] text-zinc-500 dark:text-zinc-500">{format(day, 'd')}</div>
