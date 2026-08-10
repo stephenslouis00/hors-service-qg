@@ -110,6 +110,7 @@ export function ProjectsPage() {
                 onStatusChange={(id, status) => updateContent(id, { status })}
                 onPinterestSave={(url) => updateRelease(release.id, { pinterestUrl: url })}
                 onAttachDrive={(item, url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
+                onRemoveDrive={(item, url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
                 onPublishDateChange={(id, date) => updateContent(id, { publishDate: date })}
               />
             ))}
@@ -136,6 +137,7 @@ export function ProjectsPage() {
                     onRename={(title) => updateContent(item.id, { title })}
                     onStatusChange={(status) => updateContent(item.id, { status })}
                     onAttachDrive={(url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
+                    onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
                     onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
                   />
                 ))}
@@ -180,6 +182,7 @@ function ProjectFolder({
   onStatusChange,
   onPinterestSave,
   onAttachDrive,
+  onRemoveDrive,
   onPublishDateChange,
 }: {
   release: Release
@@ -194,6 +197,7 @@ function ProjectFolder({
   onStatusChange: (id: string, status: PromoContentStatus) => void
   onPinterestSave: (url: string) => void
   onAttachDrive: (item: PromoContentItem, url: string) => void
+  onRemoveDrive: (item: PromoContentItem, url: string) => void
   onPublishDateChange: (id: string, date: number | null) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: release.id })
@@ -264,6 +268,7 @@ function ProjectFolder({
                 onRename={(title) => onRenameContent(item.id, title)}
                 onStatusChange={(status) => onStatusChange(item.id, status)}
                 onAttachDrive={(url) => onAttachDrive(item, url)}
+                onRemoveDrive={(url) => onRemoveDrive(item, url)}
                 onPublishDateChange={(date) => onPublishDateChange(item.id, date)}
               />
             ))}

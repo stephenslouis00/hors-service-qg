@@ -97,6 +97,14 @@ export function SongDetailPage() {
           shareWithEmails={members.map((m) => m.email).filter((email) => email !== user?.email)}
           onPicked={(file) => updateSong(song.id, { driveFolderUrl: file.url })}
         />
+        {song.driveFolderUrl && (
+          <button
+            onClick={() => updateSong(song.id, { driveFolderUrl: '' })}
+            className="text-xs text-red-600 hover:underline dark:text-red-400"
+          >
+            Retirer
+          </button>
+        )}
       </div>
 
       <label className="mt-3 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">

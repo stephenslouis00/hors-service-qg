@@ -20,6 +20,7 @@ export function ContentItemRow({
   onRename,
   onStatusChange,
   onAttachDrive,
+  onRemoveDrive,
   onPublishDateChange,
 }: {
   item: PromoContentItem
@@ -27,6 +28,7 @@ export function ContentItemRow({
   onRename: (title: string) => void
   onStatusChange: (status: PromoContentStatus) => void
   onAttachDrive: (url: string) => void
+  onRemoveDrive: (url: string) => void
   onPublishDateChange: (date: number | null) => void
 }) {
   const [editingDate, setEditingDate] = useState(false)
@@ -97,15 +99,24 @@ export function ContentItemRow({
               onMouseLeave={() => setFilesOpen(false)}
             >
               {item.driveLinks.map((url, i) => (
-                <a
-                  key={i}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block truncate px-3 py-1.5 text-xs text-blue-600 hover:bg-zinc-50 dark:text-blue-400 dark:hover:bg-zinc-800"
-                >
-                  📎 Fichier {item.driveLinks.length > 1 ? i + 1 : ''}
-                </a>
+                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 dark:text-blue-400"
+                  >
+                    📎 Fichier {item.driveLinks.length > 1 ? i + 1 : ''}
+                  </a>
+                  <button
+                    onClick={() => onRemoveDrive(url)}
+                    title="Retirer ce fichier"
+                    aria-label="Retirer ce fichier"
+                    className="shrink-0 rounded px-1.5 py-1 text-xs text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
             </div>
           )}

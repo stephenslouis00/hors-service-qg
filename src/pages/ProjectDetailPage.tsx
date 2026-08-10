@@ -119,6 +119,7 @@ export function ProjectDetailPage() {
               onRename={(title) => updateContent(item.id, { title })}
               onStatusChange={(status) => updateContent(item.id, { status })}
               onAttachDrive={(url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
+              onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((u) => u !== url) })}
               onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
             />
           ))}

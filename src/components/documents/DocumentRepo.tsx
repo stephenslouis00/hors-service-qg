@@ -15,7 +15,7 @@ const typeTone: Record<AdminDocType, 'blue' | 'green' | 'purple'> = {
   legal: 'purple',
 }
 
-export function DocumentRepo({ docs }: { docs: AdminDocument[] }) {
+export function DocumentRepo({ docs, onDelete }: { docs: AdminDocument[]; onDelete: (id: string) => void }) {
   return (
     <Table>
       <TableHead>
@@ -23,6 +23,7 @@ export function DocumentRepo({ docs }: { docs: AdminDocument[] }) {
         <TableHeaderCell>Type</TableHeaderCell>
         <TableHeaderCell>Ajouté le</TableHeaderCell>
         <TableHeaderCell>Par</TableHeaderCell>
+        <TableHeaderCell />
       </TableHead>
       <tbody>
         {docs.map((doc) => (
@@ -43,6 +44,16 @@ export function DocumentRepo({ docs }: { docs: AdminDocument[] }) {
             </TableCell>
             <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(doc.uploadedAt)}</TableCell>
             <TableCell className="text-zinc-500 dark:text-zinc-400">{doc.uploadedBy}</TableCell>
+            <TableCell className="text-right">
+              <button
+                onClick={() => {
+                  if (confirm(`Supprimer le document « ${doc.title} » ?`)) onDelete(doc.id)
+                }}
+                className="text-xs text-red-600 hover:underline dark:text-red-400"
+              >
+                Supprimer
+              </button>
+            </TableCell>
           </TableRow>
         ))}
       </tbody>

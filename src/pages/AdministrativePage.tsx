@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAdminDocs, useCreateAdminDoc } from '../hooks/useDocs'
+import { useAdminDocs, useCreateAdminDoc, useDeleteAdminDoc } from '../hooks/useDocs'
 import { useAddMember, useAllowlist, useRemoveMember } from '../hooks/useAllowlist'
 import { useReleases } from '../hooks/useReleases'
 import { ADMIN_DOC_TYPES, type AdminDocType } from '../types/admin'
@@ -22,6 +22,7 @@ const typeLabels: Record<AdminDocType, string> = {
 export function AdministrativePage() {
   const { docs, loading } = useAdminDocs()
   const createDoc = useCreateAdminDoc()
+  const deleteDoc = useDeleteAdminDoc()
   const { allowlistEntry, user } = useAuth()
   const { members } = useAllowlist()
   const { releases } = useReleases()
@@ -69,7 +70,7 @@ export function AdministrativePage() {
         <EmptyState title="Aucun document" description="Ajoute un contrat, un paiement ou un document juridique depuis Drive." />
       )}
 
-      {docs.length > 0 && <DocumentRepo docs={docs} />}
+      {docs.length > 0 && <DocumentRepo docs={docs} onDelete={deleteDoc} />}
 
       {allowlistEntry?.role === 'admin' && <MembersPanel />}
 
