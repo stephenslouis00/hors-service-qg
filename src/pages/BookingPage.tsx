@@ -57,6 +57,7 @@ export function BookingPage() {
       {shows.length > 0 && (
         <ShowsByStatus
           shows={shows}
+          venues={venues}
           onStatusChange={(id, status) => updateShow(id, { status })}
           onDelete={(id) => deleteShow(id)}
         />

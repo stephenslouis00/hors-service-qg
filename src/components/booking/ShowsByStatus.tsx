@@ -1,15 +1,19 @@
-import { SHOW_STATUSES, type BookingShow, type ShowStatus } from '../../types/booking'
+import { SHOW_STATUSES, type BookingShow, type ShowStatus, type Venue } from '../../types/booking'
 import { showStatusLabel, showStatusTone } from '../../lib/statusTone'
 import { formatDate } from '../../lib/dates'
+import { openMailCompose } from '../../lib/mailLink'
+import { MailIcon } from '../layout/icons'
 import { StatusPill } from '../ui/StatusPill'
 import { StatusPillSelect } from '../ui/StatusPillSelect'
 
 export function ShowsByStatus({
   shows,
+  venues,
   onStatusChange,
   onDelete,
 }: {
   shows: BookingShow[]
+  venues: Venue[]
   onStatusChange: (id: string, status: ShowStatus) => void
   onDelete: (id: string) => void
 }) {
@@ -29,6 +33,7 @@ export function ShowsByStatus({
                 <ShowRow
                   key={show.id}
                   show={show}
+                  venueEmail={venues.find((v) => v.id === show.venueId)?.email}
                   onStatusChange={(s) => onStatusChange(show.id, s)}
                   onDelete={() => onDelete(show.id)}
                 />
@@ -43,10 +48,12 @@ export function ShowsByStatus({
 
 function ShowRow({
   show,
+  venueEmail,
   onStatusChange,
   onDelete,
 }: {
   show: BookingShow
+  venueEmail?: string
   onStatusChange: (status: ShowStatus) => void
   onDelete: () => void
 }) {
@@ -67,6 +74,16 @@ function ShowRow({
         toneFor={(s) => showStatusTone[s]}
         onChange={onStatusChange}
       />
+      {venueEmail && (
+        <button
+          onClick={() => openMailCompose(venueEmail, `Concert · ${show.venueName}`)}
+          title={`Écrire à ${venueEmail}`}
+          aria-label={`Écrire à ${venueEmail}`}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        >
+          <MailIcon />
+        </button>
+      )}
       <button
         onClick={() => {
           if (confirm(`Supprimer la date « ${show.venueName} » ?`)) onDelete()

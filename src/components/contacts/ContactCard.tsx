@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { openGmailCompose } from '../../lib/gmailLink'
+import { openMailCompose } from '../../lib/mailLink'
 import { Avatar } from '../ui/Avatar'
 import { EditableText } from '../ui/EditableText'
 import { MailIcon } from '../layout/icons'
@@ -45,9 +45,9 @@ export function ContactCard({
       </div>
       {extra}
       <button
-        onClick={() => openGmailCompose(email)}
-        title={`Écrire à ${email} sur Gmail`}
-        aria-label={`Écrire à ${email} sur Gmail`}
+        onClick={() => openMailCompose(email)}
+        title={`Écrire à ${email}`}
+        aria-label={`Écrire à ${email}`}
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
       >
         <MailIcon />
