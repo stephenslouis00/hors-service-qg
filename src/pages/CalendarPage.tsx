@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import {
   usePromoCalendarEvents,
   useCreatePromoCalendarEvent,
@@ -16,11 +17,12 @@ import { SHOW_STATUSES, type ShowStatus } from '../types/booking'
 import { CalendarView, type CalendarItem } from '../components/calendar/CalendarView'
 import { EventForm, eventFormValueToRange, type EventFormValue } from '../components/calendar/EventForm'
 import { SyncToGoogleButton } from '../components/calendar/SyncToGoogleButton'
+import { CreateShowModal } from '../components/booking/CreateShowModal'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
 import { StatusPill } from '../components/ui/StatusPill'
 import { Table, TableHead, TableHeaderCell, TableRow, TableCell } from '../components/ui/Table'
-import { formatDate, formatDateTime, parseDateInputValue } from '../lib/dates'
+import { formatDate, formatDateTime } from '../lib/dates'
 import { showStatusLabel, showStatusTone, type Tone } from '../lib/statusTone'
 import { useAuth } from '../contexts/AuthContext'
 import { useGoogleToken } from '../hooks/useGoogleToken'
@@ -70,13 +72,9 @@ export function CalendarPage() {
   const [showCreateEvent, setShowCreateEvent] = useState(false)
   const [showCreateShow, setShowCreateShow] = useState(false)
   const [prefillDate, setPrefillDate] = useState<string | undefined>()
+  const [prefillShowDate, setPrefillShowDate] = useState<string | undefined>()
   const [selectedId, setSelectedId] = useState<string | null>(null)
-
-  const [venueName, setVenueName] = useState('')
-  const [city, setCity] = useState('')
-  const [showDate, setShowDate] = useState('')
-  const [showStatus, setShowStatus] = useState<ShowStatus>('target')
-  const [venueId, setVenueId] = useState('')
+  const [showPastDates, setShowPastDates] = useState(false)
 
   function toggleFilter(kind: FilterKind) {
     setActiveFilters((current) => {
@@ -127,6 +125,21 @@ export function CalendarPage() {
     .filter((entry) => activeFilters.has(entry.kind))
     .sort((a, b) => a.date - b.date)
 
+  const now = Date.now()
+  const pastDated = allDated.filter((entry) => entry.date < now)
+  const upcomingDated = allDated.filter((entry) => entry.date >= now)
+
+  const upcomingByMonth: { label: string; entries: typeof allDated }[] = []
+  for (const entry of upcomingDated) {
+    const label = format(entry.date, 'MMMM yyyy', { locale: fr })
+    let group = upcomingByMonth.find((g) => g.label === label)
+    if (!group) {
+      group = { label, entries: [] }
+      upcomingByMonth.push(group)
+    }
+    group.entries.push(entry)
+  }
+
   async function handleCreateEvent(value: EventFormValue) {
     const { startAt, endAt } = eventFormValueToRange(value)
     await createEvent({
@@ -138,32 +151,6 @@ export function CalendarPage() {
       releaseId: value.releaseId || null,
     })
     setShowCreateEvent(false)
-  }
-
-  function handleVenueSelect(id: string) {
-    setVenueId(id)
-    const venue = venues.find((v) => v.id === id)
-    if (venue) {
-      setVenueName(venue.name)
-      setCity(venue.city)
-    }
-  }
-
-  async function handleCreateShow() {
-    if (!venueName.trim() || !showDate) return
-    await createShow({
-      venueId: venueId || null,
-      venueName: venueName.trim(),
-      city: city.trim(),
-      date: parseDateInputValue(showDate)!,
-      status: showStatus,
-      notes: '',
-    })
-    setVenueName('')
-    setCity('')
-    setShowDate('')
-    setVenueId('')
-    setShowCreateShow(false)
   }
 
   async function handleSyncAll(forceReconnect = false) {
@@ -232,7 +219,7 @@ export function CalendarPage() {
             {syncingAll ? 'Synchronisation…' : '↻ Tout synchroniser sur HS'}
           </Button>
           <Button onClick={() => { setPrefillDate(undefined); setShowCreateEvent(true) }}>+ Événement promo</Button>
-          <Button variant="primary" onClick={() => { setShowDate(''); setShowCreateShow(true) }}>
+          <Button variant="primary" onClick={() => { setPrefillShowDate(undefined); setShowCreateShow(true) }}>
             + Date de concert
           </Button>
         </div>
@@ -262,17 +249,51 @@ export function CalendarPage() {
           <TableHeaderCell>Date</TableHeaderCell>
         </TableHead>
         <tbody>
-          {allDated.map((entry) => (
-            <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
-              <TableCell>
-                <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
-              </TableCell>
-              <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
-                {entry.title}
-                {entry.sub && <span className="text-zinc-500 dark:text-zinc-400"> · {entry.sub}</span>}
-              </TableCell>
-              <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(entry.date)}</TableCell>
-            </TableRow>
+          {pastDated.length > 0 && (
+            <tr className="border-b border-zinc-100 dark:border-zinc-900">
+              <td colSpan={3} className="px-4 py-2">
+                <button
+                  onClick={() => setShowPastDates((v) => !v)}
+                  className="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                >
+                  {showPastDates ? '▾' : '▸'} Dates passées ({pastDated.length})
+                </button>
+              </td>
+            </tr>
+          )}
+          {showPastDates &&
+            pastDated.map((entry) => (
+              <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
+                <TableCell>
+                  <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
+                </TableCell>
+                <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {entry.title}
+                  {entry.sub && <span className="text-zinc-500 dark:text-zinc-400"> · {entry.sub}</span>}
+                </TableCell>
+                <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(entry.date)}</TableCell>
+              </TableRow>
+            ))}
+          {upcomingByMonth.map((group) => (
+            <Fragment key={group.label}>
+              <tr className="border-b border-zinc-100 dark:border-zinc-900">
+                <td colSpan={3} className="bg-zinc-50 px-4 py-1.5 text-xs font-medium capitalize text-zinc-500 dark:bg-zinc-900/40 dark:text-zinc-400">
+                  {group.label}
+                </td>
+              </tr>
+              {group.entries.map((entry) => (
+                <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
+                  <TableCell>
+                    <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
+                  </TableCell>
+                  <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {entry.title}
+                    {entry.sub && <span className="text-zinc-500 dark:text-zinc-400"> · {entry.sub}</span>}
+                  </TableCell>
+                  <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(entry.date)}</TableCell>
+                </TableRow>
+              ))}
+            </Fragment>
           ))}
         </tbody>
       </Table>
@@ -292,7 +313,7 @@ export function CalendarPage() {
             <Button
               variant="primary"
               onClick={() => {
-                setShowDate(dayPickerDate)
+                setPrefillShowDate(dayPickerDate)
                 setDayPickerDate(undefined)
                 setShowCreateShow(true)
               }}
@@ -315,57 +336,15 @@ export function CalendarPage() {
       )}
 
       {showCreateShow && (
-        <Modal title="Nouvelle date de concert" onClose={() => setShowCreateShow(false)}>
-          <div className="space-y-3">
-            <select
-              value={venueId}
-              onChange={(e) => handleVenueSelect(e.target.value)}
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
-            >
-              <option value="">Salle non répertoriée…</option>
-              {venues.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-            <input
-              value={venueName}
-              onChange={(e) => setVenueName(e.target.value)}
-              placeholder="Nom de la salle"
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
-            />
-            <input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Ville"
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
-            />
-            <input
-              type="date"
-              value={showDate}
-              onChange={(e) => setShowDate(e.target.value)}
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
-            />
-            <select
-              value={showStatus}
-              onChange={(e) => setShowStatus(e.target.value as ShowStatus)}
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
-            >
-              {SHOW_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {showStatusLabel[s]}
-                </option>
-              ))}
-            </select>
-            <div className="flex justify-end gap-2">
-              <Button onClick={() => setShowCreateShow(false)}>Annuler</Button>
-              <Button variant="primary" onClick={handleCreateShow} disabled={!venueName.trim() || !showDate}>
-                Créer
-              </Button>
-            </div>
-          </div>
-        </Modal>
+        <CreateShowModal
+          venues={venues}
+          initialDate={prefillShowDate}
+          onClose={() => setShowCreateShow(false)}
+          onSubmit={async (input) => {
+            await createShow(input)
+            setShowCreateShow(false)
+          }}
+        />
       )}
 
       {selectedShow && (

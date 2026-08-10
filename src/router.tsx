@@ -9,7 +9,7 @@ import { PromotionLayout } from './pages/PromotionLayout'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { PromoContactsPage } from './pages/PromoContactsPage'
-import { VenuesPage } from './pages/VenuesPage'
+import { BookingPage } from './pages/BookingPage'
 import { AdministrativePage } from './pages/AdministrativePage'
 
 export function AppRouter() {
@@ -32,7 +32,7 @@ export function AppRouter() {
               <Route path="contacts" element={<PromoContactsPage />} />
             </Route>
 
-            <Route path="booking" element={<VenuesPage />} />
+            <Route path="booking" element={<BookingPage />} />
 
             <Route path="administrative" element={<AdministrativePage />} />
 
