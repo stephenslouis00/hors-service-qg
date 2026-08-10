@@ -1,5 +1,5 @@
 import type { SongStage } from '../types/song'
-import type { PromoContentStatus, ReleaseType } from '../types/promo'
+import type { PromoContentStatus, PromoContentType, ReleaseType } from '../types/promo'
 import type { ShowStatus } from '../types/booking'
 
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red' | 'purple'
@@ -46,4 +46,18 @@ export const releaseTypeLabel: Record<ReleaseType, string> = {
   single: 'Single',
   ep: 'EP',
   album: 'Album',
+}
+
+export const promoContentTypeIcon: Record<PromoContentType, string> = {
+  video: '🎬',
+  photo: '📸',
+  post: '📝',
+  other: '📄',
+}
+
+export const promoContentTypeLabel: Record<PromoContentType, string> = {
+  video: 'Vidéo',
+  photo: 'Photo',
+  post: 'Post',
+  other: 'Autre',
 }

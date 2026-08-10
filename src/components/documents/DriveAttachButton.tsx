@@ -8,11 +8,14 @@ export function DriveAttachButton({
   onPicked,
   shareWithEmails = [],
   label = '📎 Choisir depuis Drive',
+  compact = false,
 }: {
   onPicked: (file: DrivePickedFile) => void
   /** Emails to auto-share the picked file with (typically the allowlist), so nobody hits "access denied". */
   shareWithEmails?: string[]
   label?: string
+  /** Renders as a small icon-only button instead of a labeled one, for dense rows. */
+  compact?: boolean
 }) {
   const { getToken, connecting } = useGoogleToken([GOOGLE_SCOPES.drivePicker])
   const [opening, setOpening] = useState(false)
@@ -40,6 +43,20 @@ export function DriveAttachButton({
     } finally {
       setOpening(false)
     }
+  }
+
+  if (compact) {
+    return (
+      <button
+        onClick={handleClick}
+        disabled={opening || connecting}
+        title={error ?? 'Attacher depuis Drive'}
+        aria-label="Attacher depuis Drive"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      >
+        {opening || connecting ? '…' : '📎'}
+      </button>
+    )
   }
 
   return (

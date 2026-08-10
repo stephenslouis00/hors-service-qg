@@ -15,7 +15,7 @@ import { useCreatePromoContent, usePromoContent, useUpdatePromoContent } from '.
 import { useSongs } from '../hooks/useSongs'
 import { useAllowlist } from '../hooks/useAllowlist'
 import { useAuth } from '../contexts/AuthContext'
-import { PROMO_CONTENT_STATUSES, PROMO_CONTENT_TYPES, type PromoContentItem, type PromoContentStatus, type PromoContentType, type Release } from '../types/promo'
+import { PROMO_CONTENT_TYPES, type PromoContentItem, type PromoContentStatus, type PromoContentType, type Release } from '../types/promo'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -23,30 +23,15 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { EmptyState } from '../components/ui/EmptyState'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
-import { DriveAttachButton } from '../components/documents/DriveAttachButton'
+import { ContentItemRow } from '../components/releases/ContentItemRow'
 import { CreateProjectModal } from '../components/releases/CreateProjectModal'
 import { ChevronRightIcon, FolderIcon, GripIcon } from '../components/layout/icons'
-import { releaseTypeLabel } from '../lib/statusTone'
+import { releaseTypeLabel, promoContentTypeLabel } from '../lib/statusTone'
 import { reorderAcrossCollections } from '../firebase/firestore'
-import { formatDate, dateInputValue, parseDateInputValue } from '../lib/dates'
+import { formatDate } from '../lib/dates'
 import clsx from 'clsx'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
-
-const statusLabels: Record<PromoContentStatus, string> = {
-  idea: 'Idée',
-  'in-progress': 'En cours',
-  review: 'À valider',
-  scheduled: 'Programmé',
-  published: 'Publié',
-}
-
-const typeLabels: Record<PromoContentType, string> = {
-  video: 'Vidéo',
-  photo: 'Photo',
-  post: 'Post',
-  other: 'Autre',
-}
 
 const UNCLASSIFIED = '__unclassified__'
 
@@ -293,76 +278,6 @@ function ProjectFolder({
   )
 }
 
-function ContentItemRow({
-  item,
-  shareWithEmails,
-  onRename,
-  onStatusChange,
-  onAttachDrive,
-  onPublishDateChange,
-}: {
-  item: PromoContentItem
-  shareWithEmails: string[]
-  onRename: (title: string) => void
-  onStatusChange: (status: PromoContentStatus) => void
-  onAttachDrive: (url: string) => void
-  onPublishDateChange: (date: number | null) => void
-}) {
-  return (
-    <div className="rounded-md border border-zinc-200 p-2.5 dark:border-zinc-800">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">
-            <EditableText value={item.title} onSave={onRename} />
-          </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">{typeLabels[item.type]}</p>
-        </div>
-        <select
-          value={item.status}
-          onChange={(e) => onStatusChange(e.target.value as PromoContentStatus)}
-          className="shrink-0 rounded-md border border-zinc-300 bg-transparent px-2 py-1 text-xs dark:border-zinc-700"
-        >
-          {PROMO_CONTENT_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {statusLabels[s]}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mt-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-        <label htmlFor={`publish-${item.id}`}>Date de publication :</label>
-        <input
-          id={`publish-${item.id}`}
-          type="date"
-          value={dateInputValue(item.publishDate)}
-          onChange={(e) => onPublishDateChange(parseDateInputValue(e.target.value))}
-          className="rounded-md border border-zinc-300 bg-transparent px-2 py-1 text-xs dark:border-zinc-700"
-        />
-      </div>
-
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        {item.driveLinks.map((url, i) => (
-          <a
-            key={i}
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-blue-600 hover:underline dark:bg-zinc-800 dark:text-blue-400"
-          >
-            📎 Fichier {item.driveLinks.length > 1 ? i + 1 : ''}
-          </a>
-        ))}
-        <DriveAttachButton
-          label={item.driveLinks.length > 0 ? '+ Ajouter un fichier' : '📎 Attacher depuis Drive'}
-          shareWithEmails={shareWithEmails}
-          onPicked={(file) => onAttachDrive(file.url)}
-        />
-      </div>
-    </div>
-  )
-}
-
 function CreateContentModal({
   releases,
   initialReleaseId,
@@ -400,7 +315,7 @@ function CreateContentModal({
         >
           {PROMO_CONTENT_TYPES.map((t) => (
             <option key={t} value={t}>
-              {typeLabels[t]}
+              {promoContentTypeLabel[t]}
             </option>
           ))}
         </select>

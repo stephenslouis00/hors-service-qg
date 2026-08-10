@@ -11,9 +11,9 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
-import { DriveAttachButton } from '../components/documents/DriveAttachButton'
-import { promoContentTone, releaseTypeLabel, songStageLabel, songStageTone } from '../lib/statusTone'
-import { formatDate, formatDateTime, dateInputValue, parseDateInputValue } from '../lib/dates'
+import { ContentItemRow } from '../components/releases/ContentItemRow'
+import { releaseTypeLabel, songStageLabel, songStageTone } from '../lib/statusTone'
+import { formatDate, formatDateTime } from '../lib/dates'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
 
@@ -112,40 +112,15 @@ export function ProjectDetailPage() {
       ) : (
         <div className="space-y-2">
           {relatedContent.map((item) => (
-            <Card key={item.id} className="p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-900 dark:text-zinc-100">{item.title}</span>
-                <StatusPill label={item.status} tone={promoContentTone[item.status]} />
-              </div>
-              <div className="mt-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                <label htmlFor={`publish-detail-${item.id}`}>Date de publication :</label>
-                <input
-                  id={`publish-detail-${item.id}`}
-                  type="date"
-                  value={dateInputValue(item.publishDate)}
-                  onChange={(e) => updateContent(item.id, { publishDate: parseDateInputValue(e.target.value) })}
-                  className="rounded-md border border-zinc-300 bg-transparent px-2 py-1 text-xs dark:border-zinc-700"
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {item.driveLinks.map((url, i) => (
-                  <a
-                    key={i}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-blue-600 hover:underline dark:bg-zinc-800 dark:text-blue-400"
-                  >
-                    📎 Fichier {item.driveLinks.length > 1 ? i + 1 : ''}
-                  </a>
-                ))}
-                <DriveAttachButton
-                  label={item.driveLinks.length > 0 ? '+ Ajouter un fichier' : '📎 Attacher depuis Drive'}
-                  shareWithEmails={shareWithEmails}
-                  onPicked={(file) => updateContent(item.id, { driveLinks: [...item.driveLinks, file.url] })}
-                />
-              </div>
-            </Card>
+            <ContentItemRow
+              key={item.id}
+              item={item}
+              shareWithEmails={shareWithEmails}
+              onRename={(title) => updateContent(item.id, { title })}
+              onStatusChange={(status) => updateContent(item.id, { status })}
+              onAttachDrive={(url) => updateContent(item.id, { driveLinks: [...item.driveLinks, url] })}
+              onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
+            />
           ))}
         </div>
       )}
