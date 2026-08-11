@@ -1,14 +1,6 @@
 import { useState } from 'react'
 import { Button } from './Button'
-
-function isHttpUrl(value: string): boolean {
-  try {
-    const parsed = new URL(value)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
+import { isHttpUrl } from '../../lib/url'
 
 export function EditableLink({
   url,

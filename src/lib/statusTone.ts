@@ -1,6 +1,6 @@
 import type { SongStage } from '../types/song'
 import type { PromoContentStatus, PromoContentType, ReleaseType } from '../types/promo'
-import type { ShowStatus } from '../types/booking'
+import type { BookingEventType, ShowStatus } from '../types/booking'
 
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red' | 'purple'
 
@@ -40,6 +40,13 @@ export const showStatusLabel: Record<ShowStatus, string> = {
   target: 'À viser',
   confirmed: 'Confirmé',
   past: 'Passé',
+}
+
+export const bookingEventTypeLabel: Record<BookingEventType, string> = {
+  bar: 'Bar',
+  salle: 'Salle',
+  tremplin: 'Tremplin',
+  festival: 'Festival',
 }
 
 export const releaseTypeLabel: Record<ReleaseType, string> = {

@@ -1,53 +1,60 @@
 import { useState } from 'react'
-import { SHOW_STATUSES, type ShowStatus } from '../../types/booking'
-import type { Venue } from '../../types/booking'
-import { showStatusLabel } from '../../lib/statusTone'
+import { BOOKING_EVENT_TYPES, SHOW_STATUSES, type BookingEventType, type ShowStatus } from '../../types/booking'
+import { bookingEventTypeLabel, showStatusLabel } from '../../lib/statusTone'
 import { parseDateInputValue } from '../../lib/dates'
+import { isHttpUrl } from '../../lib/url'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 
 export function CreateShowModal({
-  venues,
   initialDate,
   onClose,
   onSubmit,
 }: {
-  venues: Venue[]
   initialDate?: string
   onClose: () => void
   onSubmit: (input: {
+    type: BookingEventType
     venueId: string | null
     venueName: string
     city: string
+    email: string
+    phone: string
+    signupUrl?: string
     date: number
     status: ShowStatus
     notes: string
   }) => Promise<unknown>
 }) {
-  const [venueId, setVenueId] = useState('')
+  const [type, setType] = useState<BookingEventType>('salle')
   const [venueName, setVenueName] = useState('')
   const [city, setCity] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [signupUrl, setSignupUrl] = useState('')
   const [date, setDate] = useState(initialDate ?? '')
   const [status, setStatus] = useState<ShowStatus>('target')
   const [submitting, setSubmitting] = useState(false)
-
-  function handleVenueSelect(id: string) {
-    setVenueId(id)
-    const venue = venues.find((v) => v.id === id)
-    if (venue) {
-      setVenueName(venue.name)
-      setCity(venue.city)
-    }
-  }
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!venueName.trim() || !date) return
+    const trimmedUrl = signupUrl.trim()
+    if (type === 'tremplin' && trimmedUrl && !isHttpUrl(trimmedUrl)) {
+      setError('Le lien doit commencer par http:// ou https://')
+      return
+    }
+    setError(null)
     setSubmitting(true)
     try {
       await onSubmit({
-        venueId: venueId || null,
+        type,
+        venueId: null,
         venueName: venueName.trim(),
         city: city.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        signupUrl: type === 'tremplin' && trimmedUrl ? trimmedUrl : undefined,
         date: parseDateInputValue(date)!,
         status,
         notes: '',
@@ -58,24 +65,24 @@ export function CreateShowModal({
   }
 
   return (
-    <Modal title="Nouvelle date de concert" onClose={onClose}>
+    <Modal title="Nouvel événement" onClose={onClose}>
       <div className="space-y-3">
         <select
-          value={venueId}
-          onChange={(e) => handleVenueSelect(e.target.value)}
+          value={type}
+          onChange={(e) => setType(e.target.value as BookingEventType)}
           className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
         >
-          <option value="">Salle non répertoriée…</option>
-          {venues.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
+          {BOOKING_EVENT_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {bookingEventTypeLabel[t]}
             </option>
           ))}
         </select>
         <input
+          autoFocus
           value={venueName}
           onChange={(e) => setVenueName(e.target.value)}
-          placeholder="Nom de la salle"
+          placeholder="Nom"
           className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
         />
         <input
@@ -84,6 +91,30 @@ export function CreateShowModal({
           placeholder="Ville"
           className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
         />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email (optionnel)"
+          className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
+        />
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Téléphone (optionnel)"
+          className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
+        />
+        {type === 'tremplin' && (
+          <div>
+            <input
+              value={signupUrl}
+              onChange={(e) => setSignupUrl(e.target.value)}
+              placeholder="Lien d'inscription (optionnel)"
+              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700"
+            />
+            {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+          </div>
+        )}
         <input
           type="date"
           value={date}

@@ -12,8 +12,8 @@ import { useReleases } from '../hooks/useReleases'
 import { usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { useSongs } from '../hooks/useSongs'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
-import { useVenues } from '../hooks/useVenues'
 import { SHOW_STATUSES, type ShowStatus } from '../types/booking'
+import { bookingEventTypeLabel } from '../lib/statusTone'
 import { CalendarView, type CalendarItem } from '../components/calendar/CalendarView'
 import { EventForm, eventFormValueToRange, type EventFormValue } from '../components/calendar/EventForm'
 import { SyncToGoogleButton } from '../components/calendar/SyncToGoogleButton'
@@ -57,7 +57,6 @@ export function CalendarPage() {
   const updateContent = useUpdatePromoContent()
   const { songs } = useSongs()
   const { shows } = useShows()
-  const { venues } = useVenues()
   const createShow = useCreateShow()
   const updateShow = useUpdateShow()
   const deleteShow = useDeleteShow()
@@ -220,7 +219,7 @@ export function CalendarPage() {
           </Button>
           <Button onClick={() => { setPrefillDate(undefined); setShowCreateEvent(true) }}>+ Événement promo</Button>
           <Button variant="primary" onClick={() => { setPrefillShowDate(undefined); setShowCreateShow(true) }}>
-            + Date de concert
+            + Nouvel événement
           </Button>
         </div>
       </div>
@@ -318,7 +317,7 @@ export function CalendarPage() {
                 setShowCreateShow(true)
               }}
             >
-              🎤 Date de concert
+              🎤 Nouvel événement
             </Button>
           </div>
         </Modal>
@@ -337,7 +336,6 @@ export function CalendarPage() {
 
       {showCreateShow && (
         <CreateShowModal
-          venues={venues}
           initialDate={prefillShowDate}
           onClose={() => setShowCreateShow(false)}
           onSubmit={async (input) => {
@@ -351,7 +349,8 @@ export function CalendarPage() {
         <Modal title={selectedShow.venueName} onClose={() => setSelectedId(null)}>
           <div className="space-y-3 text-sm">
             <p className="text-zinc-500 dark:text-zinc-500">
-              {selectedShow.city} · {formatDate(selectedShow.date)}
+              {bookingEventTypeLabel[selectedShow.type]}
+              {selectedShow.city && ` · ${selectedShow.city}`} · {formatDate(selectedShow.date)}
             </p>
             <select
               value={selectedShow.status}

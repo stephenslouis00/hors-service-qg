@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { watchCollection, orderByField, createDoc, updateDocFields, removeDoc } from '../firebase/firestore'
-import type { BookingShow, ShowStatus } from '../types/booking'
+import type { BookingEventType, BookingShow, ShowStatus } from '../types/booking'
 import { useAuth } from '../contexts/AuthContext'
 
 export function useShows() {
@@ -11,7 +11,10 @@ export function useShows() {
     const unsubscribe = watchCollection<Omit<BookingShow, 'id'>>(
       'bookingShows',
       (data) => {
-        setShows(data as BookingShow[])
+        // Shows created before type/email/phone existed just lack those fields — default them.
+        setShows(
+          data.map((show) => ({ ...show, type: show.type ?? 'salle', email: show.email ?? '', phone: show.phone ?? '' })) as BookingShow[],
+        )
         setLoading(false)
       },
       [orderByField('date', 'asc')],
@@ -25,9 +28,13 @@ export function useShows() {
 export function useCreateShow() {
   const { user } = useAuth()
   return (input: {
+    type: BookingEventType
     venueId: string | null
     venueName: string
     city: string
+    email: string
+    phone: string
+    signupUrl?: string
     date: number
     status: ShowStatus
     notes: string
