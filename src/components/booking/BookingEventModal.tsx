@@ -1,40 +1,48 @@
 import { useState } from 'react'
-import { BOOKING_EVENT_TYPES, SHOW_STATUSES, type BookingEventType, type ShowStatus } from '../../types/booking'
+import { BOOKING_EVENT_TYPES, SHOW_STATUSES, type BookingEventType, type BookingShow, type ShowStatus } from '../../types/booking'
 import { bookingEventTypeLabel, showStatusLabel } from '../../lib/statusTone'
-import { parseDateInputValue } from '../../lib/dates'
+import { dateInputValue, parseDateInputValue } from '../../lib/dates'
 import { isHttpUrl } from '../../lib/url'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 
-export function CreateShowModal({
+export interface BookingEventInput {
+  type: BookingEventType
+  venueId: string | null
+  venueName: string
+  city: string
+  email: string
+  phone: string
+  signupUrl?: string
+  date: number
+  status: ShowStatus
+  notes: string
+}
+
+export function BookingEventModal({
+  show,
   initialDate,
   onClose,
   onSubmit,
+  onDelete,
 }: {
+  /** When provided, edits this event instead of creating a new one. */
+  show?: BookingShow
   initialDate?: string
   onClose: () => void
-  onSubmit: (input: {
-    type: BookingEventType
-    venueId: string | null
-    venueName: string
-    city: string
-    email: string
-    phone: string
-    signupUrl?: string
-    date: number
-    status: ShowStatus
-    notes: string
-  }) => Promise<unknown>
+  onSubmit: (input: BookingEventInput) => Promise<unknown>
+  onDelete?: () => Promise<unknown>
 }) {
-  const [type, setType] = useState<BookingEventType>('salle')
-  const [venueName, setVenueName] = useState('')
-  const [city, setCity] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [signupUrl, setSignupUrl] = useState('')
-  const [date, setDate] = useState(initialDate ?? '')
-  const [status, setStatus] = useState<ShowStatus>('target')
+  const [type, setType] = useState<BookingEventType>(show?.type ?? 'salle')
+  const [venueName, setVenueName] = useState(show?.venueName ?? '')
+  const [city, setCity] = useState(show?.city ?? '')
+  const [email, setEmail] = useState(show?.email ?? '')
+  const [phone, setPhone] = useState(show?.phone ?? '')
+  const [signupUrl, setSignupUrl] = useState(show?.signupUrl ?? '')
+  const [date, setDate] = useState(show ? dateInputValue(show.date) : (initialDate ?? ''))
+  const [status, setStatus] = useState<ShowStatus>(show?.status ?? 'target')
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit() {
@@ -49,7 +57,7 @@ export function CreateShowModal({
     try {
       await onSubmit({
         type,
-        venueId: null,
+        venueId: show?.venueId ?? null,
         venueName: venueName.trim(),
         city: city.trim(),
         email: email.trim(),
@@ -57,15 +65,26 @@ export function CreateShowModal({
         signupUrl: type === 'tremplin' && trimmedUrl ? trimmedUrl : undefined,
         date: parseDateInputValue(date)!,
         status,
-        notes: '',
+        notes: show?.notes ?? '',
       })
     } finally {
       setSubmitting(false)
     }
   }
 
+  async function handleDelete() {
+    if (!onDelete) return
+    if (!confirm(`Supprimer « ${venueName} » ?`)) return
+    setDeleting(true)
+    try {
+      await onDelete()
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
-    <Modal title="Nouvel événement" onClose={onClose}>
+    <Modal title={show ? 'Modifier l’événement' : 'Nouvel événement'} onClose={onClose}>
       <div className="space-y-3">
         <select
           value={type}
@@ -132,11 +151,20 @@ export function CreateShowModal({
             </option>
           ))}
         </select>
-        <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Annuler</Button>
-          <Button variant="primary" onClick={handleSubmit} disabled={submitting || !venueName.trim() || !date}>
-            Créer
-          </Button>
+        <div className="flex items-center justify-between gap-2">
+          {show && onDelete ? (
+            <Button variant="danger" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Suppression…' : 'Supprimer'}
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex justify-end gap-2">
+            <Button onClick={onClose}>Annuler</Button>
+            <Button variant="primary" onClick={handleSubmit} disabled={submitting || !venueName.trim() || !date}>
+              {show ? 'Enregistrer' : 'Créer'}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

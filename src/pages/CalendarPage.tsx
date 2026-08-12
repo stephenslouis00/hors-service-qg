@@ -17,7 +17,7 @@ import { bookingEventTypeLabel } from '../lib/statusTone'
 import { CalendarView, type CalendarItem } from '../components/calendar/CalendarView'
 import { EventForm, eventFormValueToRange, type EventFormValue } from '../components/calendar/EventForm'
 import { SyncToGoogleButton } from '../components/calendar/SyncToGoogleButton'
-import { CreateShowModal } from '../components/booking/CreateShowModal'
+import { BookingEventModal } from '../components/booking/BookingEventModal'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
 import { StatusPill } from '../components/ui/StatusPill'
@@ -335,7 +335,7 @@ export function CalendarPage() {
       )}
 
       {showCreateShow && (
-        <CreateShowModal
+        <BookingEventModal
           initialDate={prefillShowDate}
           onClose={() => setShowCreateShow(false)}
           onSubmit={async (input) => {

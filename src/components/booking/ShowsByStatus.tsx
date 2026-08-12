@@ -1,24 +1,24 @@
-import { SHOW_STATUSES, type BookingShow, type ShowStatus, type Venue } from '../../types/booking'
+import { useState } from 'react'
+import { SHOW_STATUSES, type BookingShow, type Venue } from '../../types/booking'
 import { bookingEventTypeLabel, showStatusLabel, showStatusTone } from '../../lib/statusTone'
 import { formatDate } from '../../lib/dates'
 import { openMailCompose } from '../../lib/mailLink'
 import { isHttpUrl } from '../../lib/url'
-import { MailIcon, LinkExternalIcon } from '../layout/icons'
+import { MailIcon, LinkExternalIcon, PencilIcon } from '../layout/icons'
 import { StatusPill } from '../ui/StatusPill'
 import { StatusPillSelect } from '../ui/StatusPillSelect'
 import { EditableText } from '../ui/EditableText'
+import { BookingEventModal, type BookingEventInput } from './BookingEventModal'
 
 export function ShowsByStatus({
   shows,
   venues,
-  onRename,
-  onStatusChange,
+  onUpdate,
   onDelete,
 }: {
   shows: BookingShow[]
   venues: Venue[]
-  onRename: (id: string, name: string) => void
-  onStatusChange: (id: string, status: ShowStatus) => void
+  onUpdate: (id: string, data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: (id: string) => void
 }) {
   return (
@@ -38,8 +38,7 @@ export function ShowsByStatus({
                   key={show.id}
                   show={show}
                   venueEmail={show.email || venues.find((v) => v.id === show.venueId)?.email}
-                  onRename={(name) => onRename(show.id, name)}
-                  onStatusChange={(s) => onStatusChange(show.id, s)}
+                  onUpdate={(data) => onUpdate(show.id, data)}
                   onDelete={() => onDelete(show.id)}
                 />
               ))}
@@ -54,23 +53,22 @@ export function ShowsByStatus({
 function ShowRow({
   show,
   venueEmail,
-  onRename,
-  onStatusChange,
+  onUpdate,
   onDelete,
 }: {
   show: BookingShow
   venueEmail?: string
-  onRename: (name: string) => void
-  onStatusChange: (status: ShowStatus) => void
+  onUpdate: (data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: () => void
 }) {
+  const [editing, setEditing] = useState(false)
   const signupUrl = show.signupUrl && isHttpUrl(show.signupUrl) ? show.signupUrl : undefined
 
   return (
     <div className="flex items-center gap-3 rounded-md border border-zinc-200 p-2.5 dark:border-zinc-800">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          <EditableText value={show.venueName} onSave={onRename} />
+          <EditableText value={show.venueName} onSave={(venueName) => onUpdate({ venueName })} />
         </p>
         <p className="truncate text-xs text-zinc-500 dark:text-zinc-500">
           {bookingEventTypeLabel[show.type]}
@@ -82,7 +80,7 @@ function ShowRow({
         options={SHOW_STATUSES}
         labelFor={(s) => showStatusLabel[s]}
         toneFor={(s) => showStatusTone[s]}
-        onChange={onStatusChange}
+        onChange={(status) => onUpdate({ status })}
       />
       {signupUrl && (
         <a
@@ -107,6 +105,14 @@ function ShowRow({
         </button>
       )}
       <button
+        onClick={() => setEditing(true)}
+        title="Détails"
+        aria-label="Voir les détails"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      >
+        <PencilIcon />
+      </button>
+      <button
         onClick={() => {
           if (confirm(`Supprimer « ${show.venueName} » ?`)) onDelete()
         }}
@@ -114,6 +120,21 @@ function ShowRow({
       >
         Retirer
       </button>
+
+      {editing && (
+        <BookingEventModal
+          show={show}
+          onClose={() => setEditing(false)}
+          onSubmit={async (input) => {
+            await onUpdate(input)
+            setEditing(false)
+          }}
+          onDelete={async () => {
+            onDelete()
+            setEditing(false)
+          }}
+        />
+      )}
     </div>
   )
 }

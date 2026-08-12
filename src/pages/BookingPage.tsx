@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
 import { useVenues } from '../hooks/useVenues'
-import { CreateShowModal } from '../components/booking/CreateShowModal'
+import { BookingEventModal } from '../components/booking/BookingEventModal'
 import { ShowsByStatus } from '../components/booking/ShowsByStatus'
+import { ContactCard } from '../components/contacts/ContactCard'
+import { bookingEventTypeLabel } from '../lib/statusTone'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 
@@ -16,6 +18,12 @@ export function BookingPage() {
   const { venues } = useVenues()
 
   const [showCreateShow, setShowCreateShow] = useState(false)
+
+  // Derived, not a separate list — always in sync with the events above since it's the same data.
+  const contacts = shows
+    .map((show) => ({ show, email: show.email || venues.find((v) => v.id === show.venueId)?.email }))
+    .filter((c): c is { show: typeof shows[number]; email: string } => Boolean(c.email))
+    .sort((a, b) => a.show.venueName.localeCompare(b.show.venueName))
 
   return (
     <div className="p-4 md:p-6">
@@ -36,14 +44,31 @@ export function BookingPage() {
         <ShowsByStatus
           shows={shows}
           venues={venues}
-          onRename={(id, venueName) => updateShow(id, { venueName })}
-          onStatusChange={(id, status) => updateShow(id, { status })}
+          onUpdate={(id, data) => updateShow(id, data)}
           onDelete={(id) => deleteShow(id)}
         />
       )}
 
+      {contacts.length > 0 && (
+        <>
+          <h2 className="mb-2 mt-8 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Contacts</h2>
+          <div className="space-y-2">
+            {contacts.map(({ show, email }) => (
+              <ContactCard
+                key={show.id}
+                name={show.venueName}
+                subtitle={`${bookingEventTypeLabel[show.type]}${show.city ? ' · ' + show.city : ''}`}
+                email={email}
+                onRename={(venueName) => updateShow(show.id, { venueName })}
+                onDelete={() => deleteShow(show.id)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
       {showCreateShow && (
-        <CreateShowModal
+        <BookingEventModal
           onClose={() => setShowCreateShow(false)}
           onSubmit={async (input) => {
             await createShow(input)
