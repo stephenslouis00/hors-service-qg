@@ -15,7 +15,8 @@ export function ContactCard({
 }: {
   name: string
   subtitle?: string
-  email: string
+  /** When absent, the card shows no email action — useful for entries that are just "known" contacts without info yet. */
+  email?: string
   tags?: string[]
   /** Extra control shown before the email button, e.g. a role pill. */
   extra?: ReactNode
@@ -44,14 +45,16 @@ export function ContactCard({
         )}
       </div>
       {extra}
-      <button
-        onClick={() => openMailCompose(email)}
-        title={`Écrire à ${email}`}
-        aria-label={`Écrire à ${email}`}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-      >
-        <MailIcon />
-      </button>
+      {email && (
+        <button
+          onClick={() => openMailCompose(email)}
+          title={`Écrire à ${email}`}
+          aria-label={`Écrire à ${email}`}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        >
+          <MailIcon />
+        </button>
+      )}
       <button
         onClick={() => {
           if (confirm(`Supprimer « ${name} » ?`)) onDelete()

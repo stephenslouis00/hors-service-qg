@@ -20,9 +20,9 @@ export function BookingPage() {
   const [showCreateShow, setShowCreateShow] = useState(false)
 
   // Derived, not a separate list — always in sync with the events above since it's the same data.
+  // Includes every event, with or without contact info, so it also works as a "known places" directory.
   const contacts = shows
     .map((show) => ({ show, email: show.email || venues.find((v) => v.id === show.venueId)?.email }))
-    .filter((c): c is { show: typeof shows[number]; email: string } => Boolean(c.email))
     .sort((a, b) => a.show.venueName.localeCompare(b.show.venueName))
 
   return (
