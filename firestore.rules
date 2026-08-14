@@ -65,5 +65,9 @@ service cloud.firestore {
     match /venues/{venueId} {
       allow read, write: if isMember();
     }
+
+    match /settings/{docId} {
+      allow read, write: if isMember();
+    }
   }
 }

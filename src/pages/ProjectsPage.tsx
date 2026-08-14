@@ -14,6 +14,7 @@ import { useDeleteRelease, useReleases, useUpdateRelease } from '../hooks/useRel
 import { useCreatePromoContent, usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { useSongs } from '../hooks/useSongs'
 import { useAllowlist } from '../hooks/useAllowlist'
+import { useUnclassifiedLabel, useUpdateUnclassifiedLabel } from '../hooks/useSettings'
 import { useAuth } from '../contexts/AuthContext'
 import type { DrivePickedFile } from '../lib/googleDrive'
 import { PROMO_CONTENT_TYPES, type PromoContentItem, type PromoContentStatus, type PromoContentType, type Release } from '../types/promo'
@@ -46,6 +47,8 @@ export function ProjectsPage() {
   const updateRelease = useUpdateRelease()
   const createContent = useCreatePromoContent()
   const updateContent = useUpdatePromoContent()
+  const unclassifiedLabel = useUnclassifiedLabel()
+  const updateUnclassifiedLabel = useUpdateUnclassifiedLabel()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
   const shareWithEmails = members.map((m) => m.email).filter((email) => email !== user?.email)
 
@@ -120,14 +123,17 @@ export function ProjectsPage() {
 
         {unclassifiedItems.length > 0 && (
           <Card>
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => toggleExpanded(UNCLASSIFIED)}
-              className="flex w-full items-center gap-1.5 px-4 py-3 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-900/60"
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleExpanded(UNCLASSIFIED)}
+              className="flex w-full cursor-pointer items-center gap-1.5 px-4 py-3 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-900/60"
             >
               <ChevronRightIcon className={clsx('shrink-0 text-zinc-400 transition-transform', expanded.has(UNCLASSIFIED) && 'rotate-90')} />
               <FolderIcon className="shrink-0 text-zinc-400" />
-              Non classé
-            </button>
+              <EditableText value={unclassifiedLabel} onSave={updateUnclassifiedLabel} />
+            </div>
             {expanded.has(UNCLASSIFIED) && (
               <div className="space-y-2 border-t border-zinc-100 p-4 dark:border-zinc-900">
                 {unclassifiedItems.map((item) => (
@@ -158,6 +164,7 @@ export function ProjectsPage() {
       {contentModalReleaseId && (
         <CreateContentModal
           releases={releases}
+          unclassifiedLabel={unclassifiedLabel}
           initialReleaseId={contentModalReleaseId === UNCLASSIFIED ? '' : contentModalReleaseId}
           onClose={() => setContentModalReleaseId(null)}
           onSubmit={async (input) => {
@@ -286,11 +293,13 @@ function ProjectFolder({
 
 function CreateContentModal({
   releases,
+  unclassifiedLabel,
   initialReleaseId,
   onClose,
   onSubmit,
 }: {
   releases: { id: string; title: string }[]
+  unclassifiedLabel: string
   initialReleaseId: string
   onClose: () => void
   onSubmit: (input: { title: string; type: PromoContentType; releaseId: string | null }) => Promise<unknown>
@@ -330,7 +339,7 @@ function CreateContentModal({
           onChange={(e) => setReleaseId(e.target.value)}
           className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
         >
-          <option value="">Non classé</option>
+          <option value="">{unclassifiedLabel}</option>
           {releases.map((r) => (
             <option key={r.id} value={r.id}>
               {r.title}
