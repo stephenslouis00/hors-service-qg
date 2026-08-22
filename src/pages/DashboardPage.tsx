@@ -8,7 +8,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { formatDate, formatRelative } from '../lib/dates'
 
 const quickLinks = [
-  { url: import.meta.env.VITE_AWAL_URL as string | undefined, icon: '📦', label: 'AWAL' },
+  { url: import.meta.env.VITE_AWAL_URL as string | undefined, icon: '💿', label: 'AWAL' },
   { url: import.meta.env.VITE_BAND_DRIVE_FOLDER_URL as string | undefined, icon: '📁', label: 'Drive' },
   { url: import.meta.env.VITE_SPOTIFY_FOR_ARTISTS_URL as string | undefined, icon: '🎧', label: 'Spotify for Artists' },
   { url: import.meta.env.VITE_META_BUSINESS_SUITE_URL as string | undefined, icon: '📊', label: 'Meta Business Suite' },
