@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Tone } from '../../lib/statusTone'
 
 const toneClasses: Record<Tone, string> = {
@@ -12,11 +13,13 @@ const toneClasses: Record<Tone, string> = {
     'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800',
 }
 
-export function StatusPill({ label, tone }: { label: string; tone: Tone }) {
+/** `icon` is the category marker (stable per kind of thing — a release, a concert…); tone stays free to mean status/urgency. */
+export function StatusPill({ label, tone, icon }: { label: string; tone: Tone; icon?: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium font-mono ${toneClasses[tone]}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium font-mono ${toneClasses[tone]}`}
     >
+      {icon && <span className="shrink-0 [&>svg]:h-3 [&>svg]:w-3">{icon}</span>}
       {label}
     </span>
   )

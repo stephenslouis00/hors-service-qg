@@ -8,6 +8,7 @@ import { ContactCard } from '../components/contacts/ContactCard'
 import { bookingEventTypeLabel } from '../lib/statusTone'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { SectionHeading } from '../components/ui/SectionHeading'
 
 export function BookingPage() {
   const { shows, loading: showsLoading } = useShows()
@@ -57,7 +58,7 @@ export function BookingPage() {
 
       {contacts.length > 0 && (
         <>
-          <h2 className="mb-2 mt-8 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Contacts</h2>
+          <SectionHeading>Contacts</SectionHeading>
           <div className="space-y-2">
             {contacts.map((show) => (
               <ContactCard

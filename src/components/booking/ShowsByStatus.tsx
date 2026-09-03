@@ -4,7 +4,7 @@ import { bookingEventTypeLabel, showStatusLabel, showStatusTone } from '../../li
 import { formatDate } from '../../lib/dates'
 import { openMailCompose } from '../../lib/mailLink'
 import { isHttpUrl } from '../../lib/url'
-import { MailIcon, LinkExternalIcon, PencilIcon } from '../layout/icons'
+import { MailIcon, LinkExternalIcon, PencilIcon, PromotionIcon } from '../layout/icons'
 import { StatusPill } from '../ui/StatusPill'
 import { StatusPillSelect } from '../ui/StatusPillSelect'
 import { EditableText } from '../ui/EditableText'
@@ -91,7 +91,7 @@ function ShowRow({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        {releaseTitle && <StatusPill label={`🎵 ${releaseTitle}`} tone="purple" />}
+        {releaseTitle && <StatusPill label={releaseTitle} tone="purple" icon={<PromotionIcon />} />}
         <StatusPillSelect
           value={show.status}
           options={SHOW_STATUSES}

@@ -162,6 +162,52 @@ export function SearchIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+/** A single musical note — songs/morceaux. */
+export function MusicNoteIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="5" cy="12.5" r="2.25" />
+      <path
+        d="M7.25 12.5V3.309a.75.75 0 0 1 .974-.716l4.5 1.364a.75.75 0 0 1 .526.716V9.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </Icon>
+  )
+}
+
+/** A speaker with sound waves — promo events/announcements. */
+export function MegaphoneIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M1 6.25A1.25 1.25 0 0 1 2.25 5H4l5-2.5v11L4 11H2.25A1.25 1.25 0 0 1 1 9.75v-3.5Z" />
+      <path d="M11.5 5.5a3 3 0 0 1 0 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M13 4a5.2 5.2 0 0 1 0 8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
+/** A person — individual contacts. */
+export function PersonIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 13.5C2 11 4.5 9 8 9s6 2 6 4.5V15H2v-1.5Z" />
+    </Icon>
+  )
+}
+
+/** A checkmark in a circle — tasks/checklist steps. */
+export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M5.5 8.2 7.2 9.9l3.3-3.9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Icon>
+  )
+}
+
 export function LinkExternalIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

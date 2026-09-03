@@ -20,7 +20,6 @@ import { PROMO_CONTENT_TYPES, type PromoContentType, type Release } from '../typ
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
-import { StatusPill } from '../components/ui/StatusPill'
 import { EmptyState } from '../components/ui/EmptyState'
 import { EditableText } from '../components/ui/EditableText'
 import { ContentItemRow } from '../components/releases/ContentItemRow'
@@ -213,7 +212,7 @@ function ProjectFolder({ release, onDelete }: { release: Release; onDelete: () =
         <FolderIcon className="shrink-0 text-zinc-400" />
         <span className="min-w-0 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{release.title}</span>
         <span className="flex shrink-0 items-center gap-2">
-          <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
+          <span className="hidden text-xs text-zinc-400 dark:text-zinc-500 sm:inline">{releaseTypeLabel[release.type]}</span>
           <ReleasePhaseBadge releaseId={release.id} showProgress />
           <span className="hidden text-xs text-zinc-500 dark:text-zinc-500 sm:inline">{formatDate(release.releaseDate)}</span>
         </span>

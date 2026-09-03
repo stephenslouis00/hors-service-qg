@@ -13,6 +13,7 @@ import { PaperclipIcon } from '../components/layout/icons'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { Spinner } from '../components/ui/Spinner'
+import { SectionHeading } from '../components/ui/SectionHeading'
 import { songStageLabel } from '../lib/statusTone'
 import { dateInputValue, parseDateInputValue } from '../lib/dates'
 
@@ -137,7 +138,7 @@ export function SongDetailPage() {
         />
       </div>
 
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Retours</h2>
+      <SectionHeading>Retours</SectionHeading>
       <ActivityFeed feedback={feedback} />
       <div className="mt-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">

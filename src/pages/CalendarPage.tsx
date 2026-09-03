@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -22,6 +22,7 @@ import { BookingEventModal } from '../components/booking/BookingEventModal'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
 import { StatusPill } from '../components/ui/StatusPill'
+import { SectionHeading } from '../components/ui/SectionHeading'
 import { Table, TableHead, TableHeaderCell, TableRow, TableCell } from '../components/ui/Table'
 import { formatDate, formatDateTime } from '../lib/dates'
 import { showStatusLabel, showStatusTone, type Tone } from '../lib/statusTone'
@@ -35,17 +36,19 @@ import {
   getOrCreateHsCalendar,
   otherSyncedEmails,
 } from '../lib/googleCalendar'
+import { LocationIcon, MegaphoneIcon, VideoIcon, PromotionIcon, CheckCircleIcon } from '../components/layout/icons'
 
 type FilterKind = 'show' | 'promo-event' | 'promo-content' | 'release' | 'checklist-task'
 
 // A Record (not array+find) so TypeScript enforces every FilterKind has metadata —
-// no non-null assertions needed to look it up.
-const FILTER_META: Record<FilterKind, { label: string; tone: Tone }> = {
-  show: { label: '🎤 Concerts', tone: 'green' },
-  'promo-event': { label: '📣 Événements promo', tone: 'blue' },
-  'promo-content': { label: '🎬 Contenus', tone: 'purple' },
-  release: { label: '💿 Sorties', tone: 'yellow' },
-  'checklist-task': { label: '✅ Tâches', tone: 'red' },
+// no non-null assertions needed to look it up. The icon is the stable category
+// marker; tone stays free to carry status/urgency instead of doubling as identity.
+const FILTER_META: Record<FilterKind, { label: string; tone: Tone; icon: ReactNode }> = {
+  show: { label: 'Concerts', tone: 'green', icon: <LocationIcon /> },
+  'promo-event': { label: 'Événements promo', tone: 'blue', icon: <MegaphoneIcon /> },
+  'promo-content': { label: 'Contenus', tone: 'purple', icon: <VideoIcon /> },
+  release: { label: 'Sorties', tone: 'yellow', icon: <PromotionIcon /> },
+  'checklist-task': { label: 'Tâches', tone: 'red', icon: <CheckCircleIcon /> },
 }
 const FILTER_KINDS: FilterKind[] = ['show', 'promo-event', 'promo-content', 'release', 'checklist-task']
 
@@ -112,10 +115,10 @@ export function CalendarPage() {
     ...(activeFilters.has('release')
       ? songs
           .filter((s) => s.releaseDate != null)
-          .map((s) => ({ id: `release-${s.id}`, date: s.releaseDate!, label: `💿 ${s.title}`, tone: 'yellow' as Tone }))
+          .map((s) => ({ id: `release-${s.id}`, date: s.releaseDate!, label: s.title, tone: 'yellow' as Tone }))
       : []),
     ...(activeFilters.has('checklist-task')
-      ? checklistTasks.map((t) => ({ id: `task-${t.id}`, date: t.date!, label: `✅ ${t.label}`, tone: 'red' as Tone }))
+      ? checklistTasks.map((t) => ({ id: `task-${t.id}`, date: t.date!, label: t.label, tone: 'red' as Tone }))
       : []),
   ]
 
@@ -261,7 +264,7 @@ export function CalendarPage() {
       <div className="mb-4 flex flex-wrap gap-1.5">
         {FILTER_KINDS.map((kind) => (
           <button key={kind} onClick={() => toggleFilter(kind)} className={activeFilters.has(kind) ? '' : 'opacity-40'}>
-            <StatusPill label={FILTER_META[kind].label} tone={FILTER_META[kind].tone} />
+            <StatusPill label={FILTER_META[kind].label} tone={FILTER_META[kind].tone} icon={FILTER_META[kind].icon} />
           </button>
         ))}
       </div>
@@ -272,7 +275,7 @@ export function CalendarPage() {
         onItemClick={(id) => setSelectedId(id)}
       />
 
-      <h2 className="mb-2 mt-6 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Toutes les dates</h2>
+      <SectionHeading>Toutes les dates</SectionHeading>
       <Table>
         <TableHead>
           <TableHeaderCell>Type</TableHeaderCell>
@@ -296,7 +299,7 @@ export function CalendarPage() {
             pastDated.map((entry) => (
               <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
                 <TableCell>
-                  <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
+                  <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} icon={FILTER_META[entry.kind].icon} />
                 </TableCell>
                 <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
                   {entry.title}
@@ -315,7 +318,7 @@ export function CalendarPage() {
               {group.entries.map((entry) => (
                 <TableRow key={entry.id} onClick={() => setSelectedId(entry.id)}>
                   <TableCell>
-                    <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} />
+                    <StatusPill label={FILTER_META[entry.kind].label} tone={FILTER_META[entry.kind].tone} icon={FILTER_META[entry.kind].icon} />
                   </TableCell>
                   <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
                     {entry.title}
@@ -339,7 +342,7 @@ export function CalendarPage() {
                 setShowCreateEvent(true)
               }}
             >
-              📣 Événement promo
+              <MegaphoneIcon /> Événement promo
             </Button>
             <Button
               variant="primary"
@@ -349,7 +352,7 @@ export function CalendarPage() {
                 setShowCreateShow(true)
               }}
             >
-              🎤 Nouvel événement
+              <LocationIcon /> Nouvel événement
             </Button>
           </div>
         </Modal>

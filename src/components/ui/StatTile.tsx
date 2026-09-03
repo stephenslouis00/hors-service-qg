@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import clsx from 'clsx'
+import type { ReactNode } from 'react'
 import type { Tone } from '../../lib/statusTone'
 
 const toneClasses: Record<Tone, string> = {
@@ -18,7 +19,7 @@ export function StatTile({
   tone = 'gray',
   to,
 }: {
-  icon: string
+  icon: ReactNode
   value: number
   label: string
   tone?: Tone
@@ -27,7 +28,7 @@ export function StatTile({
   const content = (
     <>
       <div className="flex items-center gap-2">
-        <span className="text-lg leading-none">{icon}</span>
+        <span className={clsx('shrink-0 [&>svg]:h-5 [&>svg]:w-5', toneClasses[tone])}>{icon}</span>
         <span className={clsx('font-mono text-2xl font-semibold', toneClasses[tone])}>{value}</span>
       </div>
       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{label}</p>

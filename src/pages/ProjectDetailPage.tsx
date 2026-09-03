@@ -12,8 +12,10 @@ import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
 import { Spinner } from '../components/ui/Spinner'
+import { SectionHeading } from '../components/ui/SectionHeading'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
 import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
+import { CheckCircleIcon } from '../components/layout/icons'
 import { releaseTypeLabel } from '../lib/statusTone'
 import { formatDateTime } from '../lib/dates'
 
@@ -68,7 +70,7 @@ export function ProjectDetailPage() {
             onSave={(title) => updateRelease(release.id, { title })}
             className="text-xl font-semibold text-zinc-900 dark:text-zinc-50"
           />
-          <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
+          <span className="text-sm text-zinc-400 dark:text-zinc-500">{releaseTypeLabel[release.type]}</span>
           <ReleasePhaseBadge releaseId={release.id} showProgress />
         </div>
         <Button variant="danger" onClick={handleDelete} className="self-start">
@@ -97,7 +99,7 @@ export function ProjectDetailPage() {
         />
       </div>
 
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Morceaux</h2>
+      <SectionHeading>Morceaux</SectionHeading>
       {includedSongs.length === 0 ? (
         <p className="text-sm text-zinc-500">Aucun morceau associé.</p>
       ) : (
@@ -106,14 +108,14 @@ export function ProjectDetailPage() {
             <Link key={song.id} to={`/releases/songs/${song.id}`}>
               <Card className="flex items-center justify-between p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
                 <span className="text-sm text-zinc-900 dark:text-zinc-100">{song.title}</span>
-                {song.sacemDeposited && <StatusPill label="✓ SACEM" tone="green" />}
+                {song.sacemDeposited && <StatusPill label="SACEM" tone="green" icon={<CheckCircleIcon />} />}
               </Card>
             </Link>
           ))}
         </div>
       )}
 
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Événements</h2>
+      <SectionHeading>Événements</SectionHeading>
       {relatedEvents.length === 0 ? (
         <p className="text-sm text-zinc-500">Aucun événement planifié.</p>
       ) : (
@@ -127,7 +129,7 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Documents</h2>
+      <SectionHeading>Documents</SectionHeading>
       {relatedDocs.length === 0 ? (
         <p className="text-sm text-zinc-500">Aucun document associé.</p>
       ) : (

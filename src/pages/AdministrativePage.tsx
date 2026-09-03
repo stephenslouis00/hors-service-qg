@@ -13,6 +13,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Card, CardHeader } from '../components/ui/Card'
 import { StatusPill } from '../components/ui/StatusPill'
 import { StatusPillSelect } from '../components/ui/StatusPillSelect'
+import { SectionHeading } from '../components/ui/SectionHeading'
 import { useAuth } from '../contexts/AuthContext'
 
 // Mirrors the same protection enforced server-side in firestore.rules — the
@@ -151,7 +152,7 @@ function MembersPanel() {
   return (
     <Card className="mt-8">
       <CardHeader>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Membres autorisés</h2>
+        <SectionHeading className="">Membres autorisés</SectionHeading>
       </CardHeader>
       <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
         {members.map((member) => {

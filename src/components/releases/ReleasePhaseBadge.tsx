@@ -18,7 +18,7 @@ export function ReleasePhaseBadge({ releaseId, showProgress = false }: { release
       {showProgress && phase.totalCount > 0 && (
         <>
           <ProgressBar percent={phase.percent} tone={phase.tone} className="w-14 shrink-0" />
-          <span className="text-xs text-zinc-500 dark:text-zinc-500">{phase.percent}%</span>
+          <span className="font-mono text-xs text-zinc-500 dark:text-zinc-500">{phase.percent}%</span>
         </>
       )}
     </span>

@@ -14,6 +14,7 @@ import {
 import { fr } from 'date-fns/locale'
 import type { Tone } from '../../lib/statusTone'
 import { StatusPill } from '../ui/StatusPill'
+import { CalendarIcon } from '../layout/icons'
 
 export interface CalendarItem {
   id: string
@@ -54,8 +55,8 @@ export function CalendarView({
     <div>
       {/* Below sm, a 7-column grid has no room for legible pills — CalendarPage's
           "Toutes les dates" list is the mobile view; this grid is desktop-only. */}
-      <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-500 sm:hidden">
-        📅 Vue calendrier — voir « Toutes les dates » ci-dessous sur mobile.
+      <p className="mb-3 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-500 sm:hidden">
+        <CalendarIcon className="shrink-0" /> Vue calendrier — voir « Toutes les dates » ci-dessous sur mobile.
       </p>
       <div className="hidden sm:block">
         <div className="mb-3 flex items-center justify-between">

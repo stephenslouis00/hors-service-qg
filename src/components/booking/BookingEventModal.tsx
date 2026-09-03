@@ -166,7 +166,7 @@ export function BookingEventModal({
             <option value="">Aucune sortie liée</option>
             {releases.map((r) => (
               <option key={r.id} value={r.id}>
-                🎵 {r.title}
+                {r.title}
               </option>
             ))}
           </select>

@@ -14,10 +14,11 @@ import { formatDate } from '../../lib/dates'
 import type { BookingShow } from '../../types/booking'
 import { DriveAttachButton } from '../documents/DriveAttachButton'
 import { BookingEventModal } from '../booking/BookingEventModal'
-import { ChevronRightIcon, PaperclipIcon } from '../layout/icons'
+import { ChevronRightIcon, LocationIcon, PaperclipIcon } from '../layout/icons'
 import { Button } from '../ui/Button'
 import { StatusPill } from '../ui/StatusPill'
 import { EditableDate } from '../ui/EditableDate'
+import { SectionHeading } from '../ui/SectionHeading'
 
 function CheckButton({ done, onClick }: { done: boolean; onClick: () => void }) {
   return (
@@ -127,7 +128,7 @@ export function ChecklistSection({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Checklist</h2>
+        <SectionHeading className="mt-0 mb-0">Checklist</SectionHeading>
         {checkable.length > 0 && (
           <span className="text-xs text-zinc-500 dark:text-zinc-500">
             {doneCount}/{checkable.length} terminées
@@ -147,7 +148,7 @@ export function ChecklistSection({
                 className="flex w-full items-center gap-1.5 bg-zinc-50 px-3 py-2 text-left hover:bg-zinc-100 dark:bg-zinc-900/60 dark:hover:bg-zinc-900"
               >
                 <ChevronRightIcon className={clsx('shrink-0 text-zinc-400 transition-transform', !isCollapsed && 'rotate-90')} />
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500">
                   {section.label}
                 </span>
                 <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-600">
@@ -230,8 +231,8 @@ export function ChecklistSection({
         {linkedShows.length > 0 && (
           <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center gap-1.5 bg-zinc-50 px-3 py-2 dark:bg-zinc-900/60">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
-                🎤 Concerts liés
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500">
+                <LocationIcon className="shrink-0" /> Concerts liés
               </span>
               <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-600">{linkedShows.length}</span>
             </div>

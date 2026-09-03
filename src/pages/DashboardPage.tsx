@@ -5,7 +5,9 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { StatTile } from '../components/ui/StatTile'
 import { Avatar } from '../components/ui/Avatar'
 import { EmptyState } from '../components/ui/EmptyState'
+import { SectionHeading } from '../components/ui/SectionHeading'
 import { ReleaseProgressLine } from '../components/releases/ReleaseProgressLine'
+import { PromotionIcon, LocationIcon, FileIcon } from '../components/layout/icons'
 import { formatDate, formatRelative } from '../lib/dates'
 
 const quickLinks = [
@@ -23,8 +25,6 @@ export function DashboardPage() {
 
   return (
     <div className="p-4 md:p-6">
-      {nextRelease && <ReleaseProgressLine releaseId={nextRelease.id} title={nextRelease.title} />}
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Tableau de bord</h1>
@@ -47,17 +47,19 @@ export function DashboardPage() {
         )}
       </div>
 
+      {nextRelease && <ReleaseProgressLine releaseId={nextRelease.id} title={nextRelease.title} className="mt-4 mb-0" />}
+
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile icon="🎵" value={stats.releasesInProgress} label="Sorties en cours" tone="blue" to="/releases/projects" />
-        <StatTile icon="📋" value={stats.sacemPending} label="SACEM en attente" tone="yellow" to="/releases/projects" />
-        <StatTile icon="🎤" value={stats.upcomingShows} label="Concerts à venir" tone="green" to="/calendar" />
-        <StatTile icon="💿" value={stats.upcomingReleases} label="Sorties à venir" tone="purple" to="/calendar" />
+        <StatTile icon={<PromotionIcon />} value={stats.releasesInProgress} label="Sorties en cours" tone="blue" to="/releases/projects" />
+        <StatTile icon={<FileIcon />} value={stats.sacemPending} label="SACEM en attente" tone="yellow" to="/releases/projects" />
+        <StatTile icon={<LocationIcon />} value={stats.upcomingShows} label="Concerts à venir" tone="green" to="/calendar" />
+        <StatTile icon={<PromotionIcon />} value={stats.upcomingReleases} label="Sorties à venir" tone="purple" to="/calendar" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">À venir</h2>
+            <SectionHeading className="">À venir</SectionHeading>
           </CardHeader>
           {!loading && upcoming.length === 0 && (
             <div className="p-4">
@@ -89,7 +91,7 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Activité récente</h2>
+            <SectionHeading className="">Activité récente</SectionHeading>
           </CardHeader>
           {!loading && activity.length === 0 && (
             <div className="p-4">
