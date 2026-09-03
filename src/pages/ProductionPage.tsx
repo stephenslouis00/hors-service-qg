@@ -18,10 +18,10 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { EditableText } from '../components/ui/EditableText'
+import { EditableDate } from '../components/ui/EditableDate'
 import { CreateProjectModal } from '../components/releases/CreateProjectModal'
 import { ChevronRightIcon, FolderIcon, GripIcon } from '../components/layout/icons'
 import { songStageLabel, songStageTone, releaseTypeLabel } from '../lib/statusTone'
-import { formatDate } from '../lib/dates'
 import type { Song } from '../types/song'
 import type { Release } from '../types/promo'
 import clsx from 'clsx'
@@ -146,6 +146,7 @@ export function ProductionPage() {
                               onNavigate={() => navigate(`/production/${song.id}`)}
                               onRename={(title) => updateSong(song.id, { title })}
                               onToggleSacem={(checked) => updateSong(song.id, { sacemDeposited: checked })}
+                              onReleaseDateChange={(date) => updateSong(song.id, { releaseDate: date })}
                             />
                           ))}
                         </SortableContext>
@@ -158,6 +159,7 @@ export function ProductionPage() {
                       onNavigate={() => navigate(`/production/${row.song.id}`)}
                       onRename={(title) => updateSong(row.song.id, { title })}
                       onToggleSacem={(checked) => updateSong(row.song.id, { sacemDeposited: checked })}
+                      onReleaseDateChange={(date) => updateSong(row.song.id, { releaseDate: date })}
                     />
                   ),
                 )}
@@ -242,12 +244,14 @@ function NestedSongRow({
   onNavigate,
   onRename,
   onToggleSacem,
+  onReleaseDateChange,
 }: {
   song: Song
   releaseId: string
   onNavigate: () => void
   onRename: (title: string) => void
   onToggleSacem: (checked: boolean) => void
+  onReleaseDateChange: (date: number | null) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: song.id,
@@ -269,7 +273,9 @@ function NestedSongRow({
         <StatusPill label={songStageLabel[song.status]} tone={songStageTone[song.status]} />
       </TableCell>
       <SacemCell checked={Boolean(song.sacemDeposited)} onToggle={onToggleSacem} />
-      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
+      <TableCell className="text-zinc-500 dark:text-zinc-400">
+        <EditableDate value={song.releaseDate} onSave={onReleaseDateChange} />
+      </TableCell>
     </tr>
   )
 }
@@ -279,11 +285,13 @@ function FlatSongRow({
   onNavigate,
   onRename,
   onToggleSacem,
+  onReleaseDateChange,
 }: {
   song: Song
   onNavigate: () => void
   onRename: (title: string) => void
   onToggleSacem: (checked: boolean) => void
+  onReleaseDateChange: (date: number | null) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: song.id,
@@ -305,7 +313,9 @@ function FlatSongRow({
         <StatusPill label={songStageLabel[song.status]} tone={songStageTone[song.status]} />
       </TableCell>
       <SacemCell checked={Boolean(song.sacemDeposited)} onToggle={onToggleSacem} />
-      <TableCell className="text-zinc-500 dark:text-zinc-400">{formatDate(song.releaseDate)}</TableCell>
+      <TableCell className="text-zinc-500 dark:text-zinc-400">
+        <EditableDate value={song.releaseDate} onSave={onReleaseDateChange} />
+      </TableCell>
     </tr>
   )
 }
