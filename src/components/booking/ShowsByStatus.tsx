@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SHOW_STATUSES, type BookingShow, type Venue } from '../../types/booking'
+import { SHOW_STATUSES, type BookingShow, type ShowStatus, type Venue } from '../../types/booking'
 import { bookingEventTypeLabel, showStatusLabel, showStatusTone } from '../../lib/statusTone'
 import { formatDate } from '../../lib/dates'
 import { openMailCompose } from '../../lib/mailLink'
@@ -21,10 +21,19 @@ export function ShowsByStatus({
   onUpdate: (id: string, data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: (id: string) => void
 }) {
+  // A confirmed show whose date has passed reads as "Passé" here even though its own
+  // status pill still honestly shows "Confirmé" — the booking itself didn't change,
+  // it's just behind us now. Only confirmed shows move this way; a proposed/target
+  // show with an old date stays put since it was never actually locked in.
+  const now = Date.now()
+  function groupOf(show: BookingShow): ShowStatus {
+    return show.status === 'confirmed' && show.date < now ? 'past' : show.status
+  }
+
   return (
     <div className="space-y-5">
       {SHOW_STATUSES.map((status) => {
-        const group = shows.filter((s) => s.status === status)
+        const group = shows.filter((s) => groupOf(s) === status)
         if (group.length === 0) return null
         return (
           <div key={status}>
