@@ -12,6 +12,7 @@ import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
 import { PaperclipIcon } from '../components/layout/icons'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
+import { Spinner } from '../components/ui/Spinner'
 import { songStageLabel } from '../lib/statusTone'
 import { dateInputValue, parseDateInputValue } from '../lib/dates'
 
@@ -33,7 +34,7 @@ export function SongDetailPage() {
   const song = songs.find((s) => s.id === songId)
   const parentRelease = song ? releases.find((r) => r.songIds.includes(song.id)) : undefined
 
-  if (loading) return null
+  if (loading) return <Spinner />
   if (!song) {
     return (
       <div className="p-6 text-sm text-zinc-500">

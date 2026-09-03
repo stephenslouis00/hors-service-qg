@@ -8,7 +8,6 @@ import { useReleases } from './useReleases'
 import { usePromoCalendarEvents } from './useCalendarEvents'
 import { useShows } from './useShows'
 import { usePromoContent } from './usePromoContent'
-import { useVenues } from './useVenues'
 import { usePromoContacts } from './usePromoContacts'
 import { useAdminDocs } from './useDocs'
 
@@ -56,7 +55,6 @@ export function useDashboard() {
   const { events } = usePromoCalendarEvents()
   const { shows } = useShows()
   const { items: promoContent } = usePromoContent()
-  const { venues } = useVenues()
   const { contacts } = usePromoContacts()
   const { docs } = useAdminDocs()
   const recentFeedback = useRecentFeedback()
@@ -130,15 +128,6 @@ export function useDashboard() {
         to: '/calendar',
       })
     }
-    for (const venue of venues) {
-      list.push({
-        id: `venue-${venue.id}`,
-        at: venue.updatedAt,
-        actorEmail: venue.createdBy,
-        description: `a ajouté la salle « ${venue.name} »`,
-        to: '/booking',
-      })
-    }
     for (const contact of contacts) {
       list.push({
         id: `contact-${contact.id}`,
@@ -159,7 +148,7 @@ export function useDashboard() {
     }
 
     return list.sort((a, b) => b.at - a.at).slice(0, 15)
-  }, [recentFeedback, promoContent, shows, venues, contacts, docs, songs, songsLoading])
+  }, [recentFeedback, promoContent, shows, contacts, docs, songs, songsLoading])
 
   const stats = useMemo<DashboardStats>(() => {
     const now = Date.now()

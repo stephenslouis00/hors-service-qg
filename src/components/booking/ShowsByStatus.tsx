@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SHOW_STATUSES, type BookingShow, type ShowStatus, type Venue } from '../../types/booking'
+import { SHOW_STATUSES, type BookingShow, type ShowStatus } from '../../types/booking'
 import { bookingEventTypeLabel, showStatusLabel, showStatusTone } from '../../lib/statusTone'
 import { formatDate } from '../../lib/dates'
 import { openMailCompose } from '../../lib/mailLink'
@@ -12,13 +12,11 @@ import { BookingEventModal, type BookingEventInput } from './BookingEventModal'
 
 export function ShowsByStatus({
   shows,
-  venues,
   releases,
   onUpdate,
   onDelete,
 }: {
   shows: BookingShow[]
-  venues: Venue[]
   releases: { id: string; title: string }[]
   onUpdate: (id: string, data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: (id: string) => void
@@ -48,7 +46,7 @@ export function ShowsByStatus({
                 <ShowRow
                   key={show.id}
                   show={show}
-                  venueEmail={show.email || venues.find((v) => v.id === show.venueId)?.email}
+                  venueEmail={show.email || undefined}
                   releaseTitle={releases.find((r) => r.id === show.releaseId)?.title}
                   releases={releases}
                   onUpdate={(data) => onUpdate(show.id, data)}

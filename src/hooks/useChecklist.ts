@@ -51,8 +51,13 @@ export function useChecklistCalendarItems() {
   return items
 }
 
-export function updateChecklistItemDate(releaseId: string, itemId: string, date: number | null) {
-  return updateDocFields(checklistPath(releaseId), itemId, { date })
+/**
+ * Cross-release update — for callers (like the calendar) that only have a
+ * checklist item's `releaseId` from a collection-group query, not a
+ * component already scoped to one release.
+ */
+export function updateChecklistItemFields(releaseId: string, itemId: string, data: Partial<Omit<ChecklistItem, 'id'>>) {
+  return updateDocFields(checklistPath(releaseId), itemId, data)
 }
 
 /**

@@ -154,6 +154,14 @@ export function FileIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function SearchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04ZM12 6.5a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0Z" />
+    </Icon>
+  )
+}
+
 export function LinkExternalIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

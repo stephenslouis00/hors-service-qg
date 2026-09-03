@@ -11,6 +11,8 @@ export interface ChecklistItem {
   driveName?: string
   /** This step's own release date or working deadline — shows up on /calendar when set. */
   date?: number | null
+  /** Per-user Google Calendar event id, once synced via "Tout synchroniser sur HS". */
+  googleEventId?: Record<string, string>
 }
 
 /** Seeded once per release, from the band's standard production/promotion pipeline. */

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
 import { Avatar } from '../ui/Avatar'
+import { GlobalSearch } from './GlobalSearch'
 import { MoonIcon, SunIcon } from './icons'
 
 export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -25,6 +26,7 @@ export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
 
       <div className="flex items-center gap-2">
+        {user && <GlobalSearch />}
         <button
           onClick={toggleTheme}
           className="rounded-md p-1.5 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"

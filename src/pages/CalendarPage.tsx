@@ -12,7 +12,7 @@ import { useReleases } from '../hooks/useReleases'
 import { usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { useSongs } from '../hooks/useSongs'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
-import { useChecklistCalendarItems, updateChecklistItemDate } from '../hooks/useChecklist'
+import { useChecklistCalendarItems, updateChecklistItemFields } from '../hooks/useChecklist'
 import { SHOW_STATUSES, type ShowStatus } from '../types/booking'
 import { bookingEventTypeLabel } from '../lib/statusTone'
 import { CalendarView, type CalendarItem } from '../components/calendar/CalendarView'
@@ -207,6 +207,23 @@ export function CalendarPage() {
         } else {
           const id = await createGoogleCalendarEvent(accessToken, calendarId, input)
           await updateEvent(event.id, { googleEventId: { ...event.googleEventId, [email]: id } })
+        }
+      }
+
+      for (const task of checklistTasks) {
+        const release = releases.find((r) => r.id === task.releaseId)
+        const input = {
+          title: `✅ ${task.label}${release ? ` · ${release.title}` : ''}`,
+          startAt: task.date!,
+          endAt: task.date!,
+          allDay: true,
+        }
+        const existingId = task.googleEventId?.[email]
+        if (existingId) {
+          await updateGoogleCalendarEvent(accessToken, calendarId, existingId, input)
+        } else {
+          const id = await createGoogleCalendarEvent(accessToken, calendarId, input)
+          await updateChecklistItemFields(task.releaseId, task.id, { googleEventId: { ...task.googleEventId, [email]: id } })
         }
       }
     } catch (err) {
@@ -531,12 +548,32 @@ export function CalendarPage() {
             <div className="flex justify-end">
               <Button
                 variant="danger"
+                disabled={deleting}
                 onClick={async () => {
-                  await updateChecklistItemDate(selectedTask.releaseId, selectedTask.id, null)
-                  setSelectedId(null)
+                  setDeleting(true)
+                  try {
+                    const myEventId = user?.email ? selectedTask.googleEventId?.[user.email] : undefined
+                    if (myEventId) {
+                      try {
+                        const accessToken = await getToken()
+                        const calendarId = await getOrCreateHsCalendar(accessToken)
+                        await deleteGoogleCalendarEvent(accessToken, calendarId, myEventId)
+                      } catch {
+                        // Best-effort: don't block clearing the date if Google's unreachable.
+                      }
+                    }
+                    const others = otherSyncedEmails(selectedTask.googleEventId, user?.email)
+                    await updateChecklistItemFields(selectedTask.releaseId, selectedTask.id, { date: null, googleEventId: {} })
+                    setSelectedId(null)
+                    if (others.length > 0) {
+                      alert(`Cette tâche était aussi sur l'agenda Google de : ${others.join(', ')}. Ils devront la supprimer eux-mêmes de leur côté.`)
+                    }
+                  } finally {
+                    setDeleting(false)
+                  }
                 }}
               >
-                Retirer du calendrier
+                {deleting ? 'Suppression…' : 'Retirer du calendrier'}
               </Button>
             </div>
           </div>

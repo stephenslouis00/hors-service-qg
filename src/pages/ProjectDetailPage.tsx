@@ -11,6 +11,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
+import { Spinner } from '../components/ui/Spinner'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
 import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
 import { releaseTypeLabel } from '../lib/statusTone'
@@ -33,7 +34,7 @@ export function ProjectDetailPage() {
   const shareWithEmails = members.map((m) => m.email).filter((email) => email !== user?.email)
 
   const release = releases.find((s) => s.id === releaseId)
-  if (loading) return null
+  if (loading) return <Spinner />
   if (!release) {
     return (
       <div className="p-6 text-sm text-zinc-500">
@@ -59,8 +60,8 @@ export function ProjectDetailPage() {
       <Link to="/releases/projects" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
         ← Sorties
       </Link>
-      <div className="mt-2 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <EditableText
             as="h1"
             value={release.title}
@@ -70,7 +71,7 @@ export function ProjectDetailPage() {
           <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
           <ReleasePhaseBadge releaseId={release.id} showProgress />
         </div>
-        <Button variant="danger" onClick={handleDelete}>
+        <Button variant="danger" onClick={handleDelete} className="self-start">
           Supprimer
         </Button>
       </div>

@@ -26,16 +26,3 @@ export interface BookingShow {
   googleEventId?: Record<string, string>
 }
 
-export interface Venue {
-  id: string
-  name: string
-  city: string
-  contactPerson: string
-  email: string
-  phone: string
-  notes: string
-  tags: string[]
-  createdBy: string
-  createdAt: number
-  updatedAt: number
-}
