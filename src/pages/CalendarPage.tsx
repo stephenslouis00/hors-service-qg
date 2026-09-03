@@ -473,7 +473,7 @@ export function CalendarPage() {
               Publication prévue le {formatDateTime(selectedContent.publishDate ?? undefined)}
             </p>
             {selectedContentRelease && (
-              <Link to={`/promotion/projects/${selectedContentRelease.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+              <Link to={`/releases/projects/${selectedContentRelease.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
                 Voir le projet « {selectedContentRelease.title} » →
               </Link>
             )}
@@ -496,7 +496,7 @@ export function CalendarPage() {
         <Modal title={selectedSong.title} onClose={() => setSelectedId(null)}>
           <div className="space-y-3 text-sm">
             <p className="text-zinc-500 dark:text-zinc-500">Sortie prévue le {formatDate(selectedSong.releaseDate)}</p>
-            <Link to={`/production/${selectedSong.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+            <Link to={`/releases/songs/${selectedSong.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
               Voir le morceau →
             </Link>
           </div>

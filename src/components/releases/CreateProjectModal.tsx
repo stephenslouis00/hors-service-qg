@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCreateSong } from '../../hooks/useSongs'
 import { useCreateRelease } from '../../hooks/useReleases'
+import { seedChecklist } from '../../hooks/useChecklist'
 import { RELEASE_TYPES, type ReleaseType } from '../../types/promo'
 import { releaseTypeLabel } from '../../lib/statusTone'
 import { parseDateInputValue } from '../../lib/dates'
@@ -54,6 +55,7 @@ export function CreateProjectModal({
           releaseDate: null,
           songIds: [songRef.id],
         })
+        await seedChecklist(releaseRef.id)
         onCreated?.(releaseRef.id)
       } else {
         const createdIds = await Promise.all(newSongTitles.map((s) => createSong(s.title).then((ref) => ref.id)))
@@ -63,6 +65,7 @@ export function CreateProjectModal({
           releaseDate: releaseDate ? parseDateInputValue(releaseDate) : null,
           songIds: [...existingSongIds, ...createdIds],
         })
+        await seedChecklist(releaseRef.id)
         onCreated?.(releaseRef.id)
       }
       onClose()

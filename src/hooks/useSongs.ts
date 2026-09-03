@@ -27,7 +27,6 @@ export function useCreateSong() {
     const now = Date.now()
     return createDoc('songs', {
       title,
-      status: 'demo' as SongStage,
       releaseDate: null,
       sacemDeposited: false,
       order: now,

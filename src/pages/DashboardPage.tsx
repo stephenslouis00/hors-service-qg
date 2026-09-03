@@ -45,8 +45,8 @@ export function DashboardPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile icon="🎵" value={stats.songsInProduction} label="Morceaux en production" tone="blue" to="/production" />
-        <StatTile icon="📋" value={stats.sacemPending} label="SACEM en attente" tone="yellow" to="/production" />
+        <StatTile icon="🎵" value={stats.releasesInProgress} label="Sorties en cours" tone="blue" to="/releases/projects" />
+        <StatTile icon="📋" value={stats.sacemPending} label="SACEM en attente" tone="yellow" to="/releases/projects" />
         <StatTile icon="🎤" value={stats.upcomingShows} label="Concerts à venir" tone="green" to="/calendar" />
         <StatTile icon="💿" value={stats.upcomingReleases} label="Sorties à venir" tone="purple" to="/calendar" />
       </div>

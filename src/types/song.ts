@@ -4,7 +4,6 @@ export type SongStage = (typeof SONG_STAGES)[number]
 export interface Song {
   id: string
   title: string
-  status: SongStage
   releaseDate: number | null
   driveFolderUrl?: string
   sacemDeposited: boolean

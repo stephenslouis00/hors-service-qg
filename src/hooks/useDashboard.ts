@@ -3,6 +3,7 @@ import { watchCollectionGroup, orderByField, limitTo } from '../firebase/firesto
 import type { SongFeedback } from '../types/song'
 import type { Tone } from '../lib/statusTone'
 import { useSongs } from './useSongs'
+import { useReleases } from './useReleases'
 import { usePromoCalendarEvents } from './useCalendarEvents'
 import { useShows } from './useShows'
 import { usePromoContent } from './usePromoContent'
@@ -28,7 +29,7 @@ export interface ActivityItem {
 }
 
 export interface DashboardStats {
-  songsInProduction: number
+  releasesInProgress: number
   sacemPending: number
   upcomingShows: number
   upcomingReleases: number
@@ -50,6 +51,7 @@ function useRecentFeedback(limitCount = 10) {
 
 export function useDashboard() {
   const { songs, loading: songsLoading } = useSongs()
+  const { releases } = useReleases()
   const { events } = usePromoCalendarEvents()
   const { shows } = useShows()
   const { items: promoContent } = usePromoContent()
@@ -80,14 +82,14 @@ export function useDashboard() {
       }
     }
     for (const song of songs) {
-      if (song.status === 'uploaded' && song.releaseDate && song.releaseDate >= now) {
+      if (song.releaseDate && song.releaseDate >= now) {
         list.push({
           id: `song-${song.id}`,
           date: song.releaseDate,
           title: `Sortie · ${song.title}`,
           category: 'Sortie',
           tone: 'green',
-          to: `/production/${song.id}`,
+          to: `/releases/songs/${song.id}`,
         })
       }
     }
@@ -106,7 +108,7 @@ export function useDashboard() {
         at: entry.createdAt,
         actorEmail: entry.authorEmail,
         description: `a commenté « ${songTitleById.get(entry.parentId) ?? 'un morceau'} »`,
-        to: `/production/${entry.parentId}`,
+        to: `/releases/songs/${entry.parentId}`,
       })
     }
     for (const item of promoContent) {
@@ -115,7 +117,7 @@ export function useDashboard() {
         at: item.updatedAt,
         actorEmail: item.createdBy,
         description: `a mis à jour le contenu « ${item.title} »`,
-        to: item.releaseId ? `/promotion/projects/${item.releaseId}` : '/promotion/projects',
+        to: item.releaseId ? `/releases/projects/${item.releaseId}` : '/releases/projects',
       })
     }
     for (const show of shows) {
@@ -142,7 +144,7 @@ export function useDashboard() {
         at: contact.updatedAt,
         actorEmail: contact.createdBy,
         description: `a ajouté le contact « ${contact.name} »`,
-        to: '/promotion/contacts',
+        to: '/releases/contacts',
       })
     }
     for (const doc of docs) {
@@ -161,12 +163,14 @@ export function useDashboard() {
   const stats = useMemo<DashboardStats>(() => {
     const now = Date.now()
     return {
-      songsInProduction: songs.filter((s) => s.status !== 'uploaded').length,
+      // Cheap aggregate kept in sync by ChecklistSection's onCompletionChange —
+      // avoids fetching every release's checklist subcollection just for this count.
+      releasesInProgress: releases.filter((r) => r.status !== 'released').length,
       sacemPending: songs.filter((s) => !s.sacemDeposited).length,
       upcomingShows: shows.filter((s) => s.date >= now && s.status !== 'past').length,
       upcomingReleases: songs.filter((s) => s.releaseDate != null && s.releaseDate >= now).length,
     }
-  }, [songs, shows])
+  }, [songs, shows, releases])
 
   return { upcoming, activity, stats, loading: songsLoading }
 }

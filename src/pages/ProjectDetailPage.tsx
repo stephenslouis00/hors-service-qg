@@ -14,7 +14,8 @@ import { EditableLink } from '../components/ui/EditableLink'
 import { ContentItemRow } from '../components/releases/ContentItemRow'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
 import { PressKitSection } from '../components/releases/PressKitSection'
-import { releaseTypeLabel, songStageLabel, songStageTone } from '../lib/statusTone'
+import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
+import { releaseTypeLabel } from '../lib/statusTone'
 import { formatDate, formatDateTime } from '../lib/dates'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
@@ -39,7 +40,7 @@ export function ProjectDetailPage() {
   if (!release) {
     return (
       <div className="p-6 text-sm text-zinc-500">
-        Projet introuvable. <Link to="/promotion/projects" className="text-blue-600 hover:underline">Retour</Link>
+        Projet introuvable. <Link to="/releases/projects" className="text-blue-600 hover:underline">Retour</Link>
       </div>
     )
   }
@@ -51,15 +52,15 @@ export function ProjectDetailPage() {
 
   async function handleDelete() {
     // Non-null: only wired up from JSX below, unreachable until the `!release` guard above returns.
-    if (!confirm(`Supprimer le projet « ${release!.title} » ? Les morceaux resteront dans Production.`)) return
+    if (!confirm(`Supprimer le projet « ${release!.title} » ? Les morceaux resteront dans Sorties.`)) return
     await deleteRelease(release!.id)
-    navigate('/promotion/projects')
+    navigate('/releases/projects')
   }
 
   return (
     <div className="mx-auto max-w-3xl p-4 md:p-6">
-      <Link to="/promotion/projects" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
-        ← Projets
+      <Link to="/releases/projects" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+        ← Sorties
       </Link>
       <div className="mt-2 flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -70,10 +71,7 @@ export function ProjectDetailPage() {
             className="text-xl font-semibold text-zinc-900 dark:text-zinc-50"
           />
           <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
-          <StatusPill
-            label={release.status === 'upcoming' ? 'À venir' : 'Sorti'}
-            tone={release.status === 'upcoming' ? 'yellow' : 'green'}
-          />
+          <ReleasePhaseBadge releaseId={release.id} showProgress />
         </div>
         <Button variant="danger" onClick={handleDelete}>
           Supprimer
@@ -92,7 +90,10 @@ export function ProjectDetailPage() {
         />
       </div>
 
-      <ChecklistSection releaseId={release.id} />
+      <ChecklistSection
+        releaseId={release.id}
+        onCompletionChange={(allDone) => updateRelease(release.id, { status: allDone ? 'released' : 'upcoming' })}
+      />
 
       <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Morceaux</h2>
       {includedSongs.length === 0 ? (
@@ -100,10 +101,10 @@ export function ProjectDetailPage() {
       ) : (
         <div className="space-y-2">
           {includedSongs.map((song) => (
-            <Link key={song.id} to={`/production/${song.id}`}>
+            <Link key={song.id} to={`/releases/songs/${song.id}`}>
               <Card className="flex items-center justify-between p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
                 <span className="text-sm text-zinc-900 dark:text-zinc-100">{song.title}</span>
-                <StatusPill label={songStageLabel[song.status]} tone={songStageTone[song.status]} />
+                {song.sacemDeposited && <StatusPill label="✓ SACEM" tone="green" />}
               </Card>
             </Link>
           ))}

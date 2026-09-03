@@ -29,17 +29,24 @@ export function useChecklist(releaseId: string | undefined) {
   return { items, loading }
 }
 
-/** Batch-creates every template step in one write, in order. */
+/**
+ * Batch-creates every template step in one write, in order. A plain async
+ * function (not a real hook — no hook calls inside) so it can also be
+ * called right after a release is created, before any component has
+ * mounted with that release's id.
+ */
+export async function seedChecklist(releaseId: string) {
+  const batch = writeBatch(db)
+  const now = Date.now()
+  DEFAULT_CHECKLIST_TEMPLATE.forEach((step, index) => {
+    const ref = doc(collection(db, checklistPath(releaseId)))
+    batch.set(ref, { label: step.label, header: Boolean(step.header), done: false, order: index, createdAt: now })
+  })
+  await batch.commit()
+}
+
 export function useSeedChecklist(releaseId: string) {
-  return async () => {
-    const batch = writeBatch(db)
-    const now = Date.now()
-    DEFAULT_CHECKLIST_TEMPLATE.forEach((step, index) => {
-      const ref = doc(collection(db, checklistPath(releaseId)))
-      batch.set(ref, { label: step.label, header: Boolean(step.header), done: false, order: index, createdAt: now })
-    })
-    await batch.commit()
-  }
+  return () => seedChecklist(releaseId)
 }
 
 export function useAddChecklistItem(releaseId: string) {

@@ -1,10 +1,9 @@
 import { NavLink } from 'react-router-dom'
-import { AdminIcon, CalendarIcon, DashboardIcon, LocationIcon, ProductionIcon, PromotionIcon } from './icons'
+import { AdminIcon, CalendarIcon, DashboardIcon, LocationIcon, PromotionIcon } from './icons'
 
 const sections = [
   { to: '/dashboard', label: 'Tableau de bord', icon: DashboardIcon, end: true },
-  { to: '/production', label: 'Production', icon: ProductionIcon },
-  { to: '/promotion', label: 'Promotion', icon: PromotionIcon },
+  { to: '/releases', label: 'Sorties', icon: PromotionIcon },
   { to: '/booking', label: 'Booking', icon: LocationIcon },
   { to: '/calendar', label: 'Calendrier', icon: CalendarIcon },
   { to: '/administrative', label: 'Administratif', icon: AdminIcon },

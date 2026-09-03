@@ -27,11 +27,14 @@ import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
 import { ContentItemRow } from '../components/releases/ContentItemRow'
 import { CreateProjectModal } from '../components/releases/CreateProjectModal'
+import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
 import { ChevronRightIcon, FolderIcon, GripIcon } from '../components/layout/icons'
 import { releaseTypeLabel, promoContentTypeLabel } from '../lib/statusTone'
 import { reorderAcrossCollections } from '../firebase/firestore'
 import { formatDate } from '../lib/dates'
 import clsx from 'clsx'
+
+const UNCLASSIFIED_SONGS = '__unclassified_songs__'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
 
@@ -66,7 +69,7 @@ export function ProjectsPage() {
   }
 
   async function handleDelete(releaseId: string, title: string) {
-    if (!confirm(`Supprimer le projet « ${title} » ? Les morceaux resteront dans Production.`)) return
+    if (!confirm(`Supprimer le projet « ${title} » ? Les morceaux resteront disponibles, sans projet.`)) return
     await deleteRelease(releaseId)
   }
 
@@ -81,6 +84,10 @@ export function ProjectsPage() {
   }
 
   const unclassifiedItems = items.filter((i) => !i.releaseId)
+  // Every song is normally born attached to a release via CreateProjectModal — this
+  // is just a safety net so a song can never silently disappear from the app.
+  const groupedSongIds = new Set(releases.flatMap((r) => r.songIds))
+  const orphanSongs = songs.filter((s) => !groupedSongIds.has(s.id))
   const loading = releasesLoading || itemsLoading
 
   return (
@@ -92,7 +99,7 @@ export function ProjectsPage() {
         </Button>
       </div>
 
-      {!loading && releases.length === 0 && unclassifiedItems.length === 0 && (
+      {!loading && releases.length === 0 && unclassifiedItems.length === 0 && orphanSongs.length === 0 && (
         <EmptyState title="Aucun projet" description="Crée un single, un EP ou un album pour commencer." />
       )}
 
@@ -147,6 +154,33 @@ export function ProjectsPage() {
                     onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
                     onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
                   />
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {orphanSongs.length > 0 && (
+          <Card>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => toggleExpanded(UNCLASSIFIED_SONGS)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleExpanded(UNCLASSIFIED_SONGS)}
+              className="flex w-full cursor-pointer items-center gap-1.5 px-4 py-3 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-900/60"
+            >
+              <ChevronRightIcon className={clsx('shrink-0 text-zinc-400 transition-transform', expanded.has(UNCLASSIFIED_SONGS) && 'rotate-90')} />
+              <FolderIcon className="shrink-0 text-zinc-400" />
+              Morceaux sans projet
+            </div>
+            {expanded.has(UNCLASSIFIED_SONGS) && (
+              <div className="space-y-2 border-t border-zinc-100 p-4 dark:border-zinc-900">
+                {orphanSongs.map((song) => (
+                  <Link key={song.id} to={`/releases/songs/${song.id}`}>
+                    <Card className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                      <span className="text-sm text-zinc-900 dark:text-zinc-100">{song.title}</span>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
@@ -235,10 +269,7 @@ function ProjectFolder({
         </div>
         <span className="flex shrink-0 items-center gap-2">
           <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
-          <StatusPill
-            label={release.status === 'upcoming' ? 'À venir' : 'Sorti'}
-            tone={release.status === 'upcoming' ? 'yellow' : 'green'}
-          />
+          <ReleasePhaseBadge releaseId={release.id} showProgress />
           <span className="hidden text-xs text-zinc-500 dark:text-zinc-500 sm:inline">{formatDate(release.releaseDate)}</span>
         </span>
       </div>
@@ -246,7 +277,7 @@ function ProjectFolder({
       {isOpen && (
         <div className="border-t border-zinc-100 p-4 dark:border-zinc-900">
           <div className="flex items-center justify-between">
-            <Link to={`/promotion/projects/${release.id}`} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+            <Link to={`/releases/projects/${release.id}`} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
               Voir le détail complet (morceaux, calendrier, documents) →
             </Link>
             <button onClick={onDelete} className="text-xs text-red-600 hover:underline dark:text-red-400">
