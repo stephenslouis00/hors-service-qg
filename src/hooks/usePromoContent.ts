@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { watchCollection, orderByField, createDoc, updateDocFields, removeDoc } from '../firebase/firestore'
+import { watchCollection, createDoc, updateDocFields, removeDoc } from '../firebase/firestore'
 import type { DriveLink, PromoContentItem, PromoContentStatus, PromoContentType } from '../types/promo'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -14,16 +14,15 @@ export function usePromoContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = watchCollection<Omit<PromoContentItem, 'id'>>(
-      'promoContent',
-      (data) => {
-        setItems(
-          data.map((item) => ({ ...item, driveLinks: normalizeDriveLinks(item.driveLinks) })) as PromoContentItem[],
-        )
-        setLoading(false)
-      },
-      [orderByField('updatedAt', 'desc')],
-    )
+    const unsubscribe = watchCollection<Omit<PromoContentItem, 'id'>>('promoContent', (data) => {
+      // Chronological by publish date (soonest first); items with no date yet trail at the end
+      // instead of interleaving among dated ones based on an unrelated timestamp.
+      const sorted = (data as PromoContentItem[])
+        .map((item) => ({ ...item, driveLinks: normalizeDriveLinks(item.driveLinks) }))
+        .sort((a, b) => (a.publishDate ?? Infinity) - (b.publishDate ?? Infinity))
+      setItems(sorted)
+      setLoading(false)
+    })
     return unsubscribe
   }, [])
 
