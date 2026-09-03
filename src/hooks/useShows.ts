@@ -38,6 +38,7 @@ export function useCreateShow() {
     date: number
     status: ShowStatus
     notes: string
+    releaseId?: string | null
   }) => {
     const now = Date.now()
     return createDoc('bookingShows', { ...input, createdBy: user?.email ?? 'unknown', createdAt: now, updatedAt: now })

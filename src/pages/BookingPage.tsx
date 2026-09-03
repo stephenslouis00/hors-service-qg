@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
 import { useVenues } from '../hooks/useVenues'
+import { useReleases } from '../hooks/useReleases'
 import { BookingEventModal } from '../components/booking/BookingEventModal'
 import { ShowsByStatus } from '../components/booking/ShowsByStatus'
 import { ContactCard } from '../components/contacts/ContactCard'
@@ -16,6 +17,7 @@ export function BookingPage() {
 
   // Kept read-only, for contact info on shows created before venues were folded into events.
   const { venues } = useVenues()
+  const { releases } = useReleases()
 
   const [showCreateShow, setShowCreateShow] = useState(false)
 
@@ -44,6 +46,7 @@ export function BookingPage() {
         <ShowsByStatus
           shows={shows}
           venues={venues}
+          releases={releases}
           onUpdate={(id, data) => updateShow(id, data)}
           onDelete={(id) => deleteShow(id)}
         />
@@ -69,6 +72,7 @@ export function BookingPage() {
 
       {showCreateShow && (
         <BookingEventModal
+          releases={releases}
           onClose={() => setShowCreateShow(false)}
           onSubmit={async (input) => {
             await createShow(input)

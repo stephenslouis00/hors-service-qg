@@ -13,11 +13,13 @@ import { BookingEventModal, type BookingEventInput } from './BookingEventModal'
 export function ShowsByStatus({
   shows,
   venues,
+  releases,
   onUpdate,
   onDelete,
 }: {
   shows: BookingShow[]
   venues: Venue[]
+  releases: { id: string; title: string }[]
   onUpdate: (id: string, data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: (id: string) => void
 }) {
@@ -47,6 +49,8 @@ export function ShowsByStatus({
                   key={show.id}
                   show={show}
                   venueEmail={show.email || venues.find((v) => v.id === show.venueId)?.email}
+                  releaseTitle={releases.find((r) => r.id === show.releaseId)?.title}
+                  releases={releases}
                   onUpdate={(data) => onUpdate(show.id, data)}
                   onDelete={() => onDelete(show.id)}
                 />
@@ -62,11 +66,15 @@ export function ShowsByStatus({
 function ShowRow({
   show,
   venueEmail,
+  releaseTitle,
+  releases,
   onUpdate,
   onDelete,
 }: {
   show: BookingShow
   venueEmail?: string
+  releaseTitle?: string
+  releases: { id: string; title: string }[]
   onUpdate: (data: Partial<BookingEventInput>) => Promise<unknown>
   onDelete: () => void
 }) {
@@ -84,6 +92,7 @@ function ShowRow({
           {show.city && ` · ${show.city}`} · {formatDate(show.date)}
         </p>
       </div>
+      {releaseTitle && <StatusPill label={`🎵 ${releaseTitle}`} tone="purple" />}
       <StatusPillSelect
         value={show.status}
         options={SHOW_STATUSES}
@@ -133,6 +142,7 @@ function ShowRow({
       {editing && (
         <BookingEventModal
           show={show}
+          releases={releases}
           onClose={() => setEditing(false)}
           onSubmit={async (input) => {
             await onUpdate(input)

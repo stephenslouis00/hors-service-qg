@@ -18,6 +18,8 @@ export interface BookingShow {
   status: ShowStatus
   fee?: string
   notes: string
+  /** Optional link to the release it supports — surfaces this show on that release's checklist. */
+  releaseId?: string | null
   createdBy: string
   createdAt: number
   updatedAt: number

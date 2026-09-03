@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, doc, writeBatch } from 'firebase/firestore'
 import { db } from '../firebase/config'
-import { watchCollection, orderByField, createDoc, updateDocFields, removeDoc } from '../firebase/firestore'
+import { watchCollection, watchCollectionGroup, orderByField, createDoc, updateDocFields, removeDoc } from '../firebase/firestore'
 import { DEFAULT_CHECKLIST_TEMPLATE, type ChecklistItem } from '../types/checklist'
 
 function checklistPath(releaseId: string) {
@@ -27,6 +27,32 @@ export function useChecklist(releaseId: string | undefined) {
   }, [releaseId])
 
   return { items, loading }
+}
+
+export interface ChecklistCalendarItem extends ChecklistItem {
+  /** The release this step belongs to — every collection-group item carries it. */
+  releaseId: string
+}
+
+/** Every checklist step across every release that has its own date/deadline set — feeds the calendar. */
+export function useChecklistCalendarItems() {
+  const [items, setItems] = useState<ChecklistCalendarItem[]>([])
+
+  useEffect(() => {
+    return watchCollectionGroup<Omit<ChecklistItem, 'id'>>('checklist', (data) => {
+      setItems(
+        data
+          .filter((item) => !item.header && item.date != null)
+          .map(({ parentId, ...rest }) => ({ ...rest, releaseId: parentId }) as ChecklistCalendarItem),
+      )
+    })
+  }, [])
+
+  return items
+}
+
+export function updateChecklistItemDate(releaseId: string, itemId: string, date: number | null) {
+  return updateDocFields(checklistPath(releaseId), itemId, { date })
 }
 
 /**

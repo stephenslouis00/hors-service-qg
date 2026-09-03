@@ -10,7 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useDeleteRelease, useReleases, useUpdateRelease } from '../hooks/useReleases'
+import { useDeleteRelease, useReleases } from '../hooks/useReleases'
 import { useCreatePromoContent, usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { useSongs } from '../hooks/useSongs'
 import { useAllowlist } from '../hooks/useAllowlist'
@@ -23,7 +23,6 @@ import { Modal } from '../components/ui/Modal'
 import { StatusPill } from '../components/ui/StatusPill'
 import { EmptyState } from '../components/ui/EmptyState'
 import { EditableText } from '../components/ui/EditableText'
-import { EditableLink } from '../components/ui/EditableLink'
 import { ContentItemRow } from '../components/releases/ContentItemRow'
 import { CreateProjectModal } from '../components/releases/CreateProjectModal'
 import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
@@ -35,8 +34,6 @@ import clsx from 'clsx'
 
 const UNCLASSIFIED_SONGS = '__unclassified_songs__'
 
-const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
-
 const UNCLASSIFIED = '__unclassified__'
 
 export function ProjectsPage() {
@@ -46,7 +43,6 @@ export function ProjectsPage() {
   const { members } = useAllowlist()
   const { user } = useAuth()
   const deleteRelease = useDeleteRelease()
-  const updateRelease = useUpdateRelease()
   const createContent = useCreatePromoContent()
   const updateContent = useUpdatePromoContent()
   const unclassifiedLabel = useUnclassifiedLabel()
@@ -106,15 +102,7 @@ export function ProjectsPage() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={releases.map((r) => r.id)} strategy={verticalListSortingStrategy}>
             {releases.map((release) => (
-              <ProjectFolder
-                key={release.id}
-                release={release}
-                isOpen={expanded.has(release.id)}
-                onToggle={() => toggleExpanded(release.id)}
-                onRename={(title) => updateRelease(release.id, { title })}
-                onDelete={() => handleDelete(release.id, release.title)}
-                onPinterestSave={(url) => updateRelease(release.id, { pinterestUrl: url })}
-              />
+              <ProjectFolder key={release.id} release={release} onDelete={() => handleDelete(release.id, release.title)} />
             ))}
           </SortableContext>
         </DndContext>
@@ -202,77 +190,40 @@ export function ProjectsPage() {
   )
 }
 
-function ProjectFolder({
-  release,
-  isOpen,
-  onToggle,
-  onRename,
-  onDelete,
-  onPinterestSave,
-}: {
-  release: Release
-  isOpen: boolean
-  onToggle: () => void
-  onRename: (title: string) => void
-  onDelete: () => void
-  onPinterestSave: (url: string) => void
-}) {
+function ProjectFolder({ release, onDelete }: { release: Release; onDelete: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: release.id })
 
   return (
-    <Card ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
-      <div className="flex w-full items-center justify-between gap-3 px-2 py-1">
-        <span
-          {...listeners}
-          {...attributes}
-          className="flex shrink-0 cursor-grab items-center px-2 py-2 text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:hover:text-zinc-300"
-        >
-          <GripIcon />
-        </span>
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={onToggle}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onToggle()}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 py-2 text-left hover:opacity-80"
-        >
-          <ChevronRightIcon className={clsx('shrink-0 text-zinc-400 transition-transform', isOpen && 'rotate-90')} />
-          <FolderIcon className="shrink-0 text-zinc-400" />
-          <span className="min-w-0 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            <EditableText value={release.title} onSave={onRename} />
-          </span>
-        </div>
+    <Card
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
+      className="group flex w-full items-center gap-3 px-2 py-1"
+    >
+      <span
+        {...listeners}
+        {...attributes}
+        className="flex shrink-0 cursor-grab items-center px-2 py-2 text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:hover:text-zinc-300"
+      >
+        <GripIcon />
+      </span>
+      <Link
+        to={`/releases/projects/${release.id}`}
+        className="flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left hover:opacity-80"
+      >
+        <FolderIcon className="shrink-0 text-zinc-400" />
+        <span className="min-w-0 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{release.title}</span>
         <span className="flex shrink-0 items-center gap-2">
           <StatusPill label={releaseTypeLabel[release.type]} tone="gray" />
           <ReleasePhaseBadge releaseId={release.id} showProgress />
           <span className="hidden text-xs text-zinc-500 dark:text-zinc-500 sm:inline">{formatDate(release.releaseDate)}</span>
         </span>
-      </div>
-
-      {isOpen && (
-        <div className="border-t border-zinc-100 p-4 dark:border-zinc-900">
-          <div className="flex items-center justify-between">
-            <Link to={`/releases/projects/${release.id}`} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
-              Voir le détail complet (morceaux, calendrier, documents) →
-            </Link>
-            <button onClick={onDelete} className="text-xs text-red-600 hover:underline dark:text-red-400">
-              Supprimer le projet
-            </button>
-          </div>
-
-          <div className="mt-2">
-            <EditableLink
-              url={release.pinterestUrl}
-              onSave={onPinterestSave}
-              icon="📌"
-              linkLabel="Moodboard Pinterest"
-              emptyLabel="Aucun moodboard Pinterest"
-              createUrl={pinterestUrl}
-              createLabel="+ Créer un moodboard Pinterest"
-            />
-          </div>
-        </div>
-      )}
+      </Link>
+      <button
+        onClick={onDelete}
+        className="shrink-0 text-xs text-red-600 opacity-0 hover:underline group-hover:opacity-100 dark:text-red-400"
+      >
+        Supprimer
+      </button>
     </Card>
   )
 }

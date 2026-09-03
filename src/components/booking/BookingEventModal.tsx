@@ -17,11 +17,13 @@ export interface BookingEventInput {
   date: number
   status: ShowStatus
   notes: string
+  releaseId: string | null
 }
 
 export function BookingEventModal({
   show,
   initialDate,
+  releases = [],
   onClose,
   onSubmit,
   onDelete,
@@ -29,6 +31,8 @@ export function BookingEventModal({
   /** When provided, edits this event instead of creating a new one. */
   show?: BookingShow
   initialDate?: string
+  /** Releases this event can be linked to — the link surfaces the show on that release's checklist. */
+  releases?: { id: string; title: string }[]
   onClose: () => void
   onSubmit: (input: BookingEventInput) => Promise<unknown>
   onDelete?: () => Promise<unknown>
@@ -41,6 +45,7 @@ export function BookingEventModal({
   const [signupUrl, setSignupUrl] = useState(show?.signupUrl ?? '')
   const [date, setDate] = useState(show ? dateInputValue(show.date) : (initialDate ?? ''))
   const [status, setStatus] = useState<ShowStatus>(show?.status ?? 'target')
+  const [releaseId, setReleaseId] = useState(show?.releaseId ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -66,6 +71,7 @@ export function BookingEventModal({
         date: parseDateInputValue(date)!,
         status,
         notes: show?.notes ?? '',
+        releaseId: releaseId || null,
       })
     } finally {
       setSubmitting(false)
@@ -151,6 +157,20 @@ export function BookingEventModal({
             </option>
           ))}
         </select>
+        {releases.length > 0 && (
+          <select
+            value={releaseId}
+            onChange={(e) => setReleaseId(e.target.value)}
+            className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+          >
+            <option value="">Aucune sortie liée</option>
+            {releases.map((r) => (
+              <option key={r.id} value={r.id}>
+                🎵 {r.title}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="flex items-center justify-between gap-2">
           {show && onDelete ? (
             <Button variant="danger" onClick={handleDelete} disabled={deleting}>

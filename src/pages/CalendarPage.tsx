@@ -12,6 +12,7 @@ import { useReleases } from '../hooks/useReleases'
 import { usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { useSongs } from '../hooks/useSongs'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
+import { useChecklistCalendarItems, updateChecklistItemDate } from '../hooks/useChecklist'
 import { SHOW_STATUSES, type ShowStatus } from '../types/booking'
 import { bookingEventTypeLabel } from '../lib/statusTone'
 import { CalendarView, type CalendarItem } from '../components/calendar/CalendarView'
@@ -35,7 +36,7 @@ import {
   otherSyncedEmails,
 } from '../lib/googleCalendar'
 
-type FilterKind = 'show' | 'promo-event' | 'promo-content' | 'release'
+type FilterKind = 'show' | 'promo-event' | 'promo-content' | 'release' | 'checklist-task'
 
 // A Record (not array+find) so TypeScript enforces every FilterKind has metadata —
 // no non-null assertions needed to look it up.
@@ -44,8 +45,9 @@ const FILTER_META: Record<FilterKind, { label: string; tone: Tone }> = {
   'promo-event': { label: '📣 Événements promo', tone: 'blue' },
   'promo-content': { label: '🎬 Contenus', tone: 'purple' },
   release: { label: '💿 Sorties', tone: 'yellow' },
+  'checklist-task': { label: '✅ Tâches', tone: 'red' },
 }
-const FILTER_KINDS: FilterKind[] = ['show', 'promo-event', 'promo-content', 'release']
+const FILTER_KINDS: FilterKind[] = ['show', 'promo-event', 'promo-content', 'release', 'checklist-task']
 
 export function CalendarPage() {
   const { events } = usePromoCalendarEvents()
@@ -60,6 +62,7 @@ export function CalendarPage() {
   const createShow = useCreateShow()
   const updateShow = useUpdateShow()
   const deleteShow = useDeleteShow()
+  const checklistTasks = useChecklistCalendarItems()
   const { user } = useAuth()
   const { getToken, invalidate } = useGoogleToken([GOOGLE_SCOPES.calendar])
   const [deleting, setDeleting] = useState(false)
@@ -91,6 +94,8 @@ export function CalendarPage() {
     : undefined
   const selectedContentRelease = selectedContent?.releaseId ? releases.find((r) => r.id === selectedContent.releaseId) : undefined
   const selectedSong = selectedId?.startsWith('release-') ? songs.find((s) => `release-${s.id}` === selectedId) : undefined
+  const selectedTask = selectedId?.startsWith('task-') ? checklistTasks.find((t) => `task-${t.id}` === selectedId) : undefined
+  const selectedTaskRelease = selectedTask ? releases.find((r) => r.id === selectedTask.releaseId) : undefined
 
   const items: CalendarItem[] = [
     ...(activeFilters.has('show')
@@ -109,6 +114,9 @@ export function CalendarPage() {
           .filter((s) => s.releaseDate != null)
           .map((s) => ({ id: `release-${s.id}`, date: s.releaseDate!, label: `💿 ${s.title}`, tone: 'yellow' as Tone }))
       : []),
+    ...(activeFilters.has('checklist-task')
+      ? checklistTasks.map((t) => ({ id: `task-${t.id}`, date: t.date!, label: `✅ ${t.label}`, tone: 'red' as Tone }))
+      : []),
   ]
 
   const allDated = [
@@ -120,6 +128,13 @@ export function CalendarPage() {
     ...songs
       .filter((s) => s.releaseDate != null)
       .map((s) => ({ id: `release-${s.id}`, date: s.releaseDate!, kind: 'release' as const, title: s.title, sub: '' })),
+    ...checklistTasks.map((t) => ({
+      id: `task-${t.id}`,
+      date: t.date!,
+      kind: 'checklist-task' as const,
+      title: t.label,
+      sub: releases.find((r) => r.id === t.releaseId)?.title ?? '',
+    })),
   ]
     .filter((entry) => activeFilters.has(entry.kind))
     .sort((a, b) => a.date - b.date)
@@ -211,7 +226,7 @@ export function CalendarPage() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Calendrier</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Concerts, événements promo, contenus et sorties, au même endroit.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Concerts, événements promo, contenus, sorties et tâches de checklist, au même endroit.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => handleSyncAll(false)} disabled={syncingAll}>
@@ -337,6 +352,7 @@ export function CalendarPage() {
       {showCreateShow && (
         <BookingEventModal
           initialDate={prefillShowDate}
+          releases={releases}
           onClose={() => setShowCreateShow(false)}
           onSubmit={async (input) => {
             await createShow(input)
@@ -499,6 +515,30 @@ export function CalendarPage() {
             <Link to={`/releases/songs/${selectedSong.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
               Voir le morceau →
             </Link>
+          </div>
+        </Modal>
+      )}
+
+      {selectedTask && (
+        <Modal title={selectedTask.label} onClose={() => setSelectedId(null)}>
+          <div className="space-y-3 text-sm">
+            <p className="text-zinc-500 dark:text-zinc-500">{formatDate(selectedTask.date)}</p>
+            {selectedTaskRelease && (
+              <Link to={`/releases/projects/${selectedTaskRelease.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+                Voir la checklist « {selectedTaskRelease.title} » →
+              </Link>
+            )}
+            <div className="flex justify-end">
+              <Button
+                variant="danger"
+                onClick={async () => {
+                  await updateChecklistItemDate(selectedTask.releaseId, selectedTask.id, null)
+                  setSelectedId(null)
+                }}
+              >
+                Retirer du calendrier
+              </Button>
+            </div>
           </div>
         </Modal>
       )}

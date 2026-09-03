@@ -9,6 +9,8 @@ export interface ChecklistItem {
   /** '' means no file attached — never `undefined` (Firestore updateDoc rejects it). */
   driveUrl?: string
   driveName?: string
+  /** This step's own release date or working deadline — shows up on /calendar when set. */
+  date?: number | null
 }
 
 /** Seeded once per release, from the band's standard production/promotion pipeline. */

@@ -3,6 +3,7 @@ import { useDeleteRelease, useReleases, useUpdateRelease } from '../hooks/useRel
 import { usePromoCalendarEvents } from '../hooks/useCalendarEvents'
 import { useAdminDocs } from '../hooks/useDocs'
 import { useSongs } from '../hooks/useSongs'
+import { useShows } from '../hooks/useShows'
 import { useAllowlist } from '../hooks/useAllowlist'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusPill } from '../components/ui/StatusPill'
@@ -13,7 +14,7 @@ import { EditableLink } from '../components/ui/EditableLink'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
 import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
 import { releaseTypeLabel } from '../lib/statusTone'
-import { formatDate, formatDateTime } from '../lib/dates'
+import { formatDateTime } from '../lib/dates'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
 
@@ -23,6 +24,7 @@ export function ProjectDetailPage() {
   const { events } = usePromoCalendarEvents()
   const { docs } = useAdminDocs()
   const { songs } = useSongs()
+  const { shows } = useShows()
   const { members } = useAllowlist()
   const { user } = useAuth()
   const deleteRelease = useDeleteRelease()
@@ -43,6 +45,7 @@ export function ProjectDetailPage() {
   const includedSongs = songs.filter((s) => release.songIds.includes(s.id))
   const relatedEvents = events.filter((e) => e.releaseId === release.id)
   const relatedDocs = docs.filter((d) => d.relatedReleaseId === release.id)
+  const linkedShows = shows.filter((s) => s.releaseId === release.id)
 
   async function handleDelete() {
     // Non-null: only wired up from JSX below, unreachable until the `!release` guard above returns.
@@ -76,12 +79,12 @@ export function ProjectDetailPage() {
         <ChecklistSection
           releaseId={release.id}
           shareWithEmails={shareWithEmails}
+          linkedShows={linkedShows}
           onCompletionChange={(allDone) => updateRelease(release.id, { status: allDone ? 'released' : 'upcoming' })}
         />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
-        <span className="text-zinc-500 dark:text-zinc-400">Sortie le {formatDate(release.releaseDate)}</span>
         <EditableLink
           url={release.pinterestUrl}
           onSave={(pinterestUrl) => updateRelease(release.id, { pinterestUrl })}

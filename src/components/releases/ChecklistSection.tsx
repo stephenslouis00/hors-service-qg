@@ -7,10 +7,17 @@ import {
   useUpdateChecklistItem,
   useDeleteChecklistItem,
 } from '../../hooks/useChecklist'
+import { useUpdateShow, useDeleteShow } from '../../hooks/useShows'
 import { groupChecklistSections } from '../../lib/releasePhase'
+import { bookingEventTypeLabel, showStatusLabel, showStatusTone } from '../../lib/statusTone'
+import { formatDate } from '../../lib/dates'
+import type { BookingShow } from '../../types/booking'
 import { DriveAttachButton } from '../documents/DriveAttachButton'
+import { BookingEventModal } from '../booking/BookingEventModal'
 import { ChevronRightIcon, PaperclipIcon } from '../layout/icons'
 import { Button } from '../ui/Button'
+import { StatusPill } from '../ui/StatusPill'
+import { EditableDate } from '../ui/EditableDate'
 
 function CheckButton({ done, onClick }: { done: boolean; onClick: () => void }) {
   return (
@@ -37,10 +44,12 @@ function CheckButton({ done, onClick }: { done: boolean; onClick: () => void }) 
 export function ChecklistSection({
   releaseId,
   shareWithEmails,
+  linkedShows = [],
   onCompletionChange,
 }: {
   releaseId: string
   shareWithEmails: string[]
+  linkedShows?: BookingShow[]
   onCompletionChange?: (allDone: boolean) => void
 }) {
   const { items, loading } = useChecklist(releaseId)
@@ -48,8 +57,11 @@ export function ChecklistSection({
   const addItem = useAddChecklistItem(releaseId)
   const updateItem = useUpdateChecklistItem(releaseId)
   const deleteItem = useDeleteChecklistItem(releaseId)
+  const updateShow = useUpdateShow()
+  const deleteShow = useDeleteShow()
   const [draft, setDraft] = useState('')
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  const [editingShow, setEditingShow] = useState<BookingShow | null>(null)
   const seededRef = useRef(false)
   const wasCompleteRef = useRef<Map<string, boolean>>(new Map())
   const onCompletionChangeRef = useRef(onCompletionChange)
@@ -157,6 +169,14 @@ export function ChecklistSection({
                         {item.label}
                       </span>
 
+                      <span className="shrink-0 text-xs">
+                        <EditableDate
+                          value={item.date ?? null}
+                          onSave={(date) => updateItem(item.id, { date })}
+                          emptyLabel="+ date"
+                        />
+                      </span>
+
                       {item.driveUrl ? (
                         <span className="flex shrink-0 items-center gap-1">
                           <a
@@ -199,7 +219,53 @@ export function ChecklistSection({
             </div>
           )
         })}
+
+        {linkedShows.length > 0 && (
+          <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-1.5 bg-zinc-50 px-3 py-2 dark:bg-zinc-900/60">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                🎤 Concerts liés
+              </span>
+              <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-600">{linkedShows.length}</span>
+            </div>
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
+              {linkedShows.map((show) => (
+                <button
+                  key={show.id}
+                  onClick={() => setEditingShow(show)}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
+                >
+                  <span className="min-w-0 flex-1 truncate text-sm text-zinc-700 dark:text-zinc-300">
+                    {show.venueName}
+                    <span className="text-zinc-400">
+                      {' '}
+                      · {bookingEventTypeLabel[show.type]}
+                      {show.city && ` · ${show.city}`}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-500">{formatDate(show.date)}</span>
+                  <StatusPill label={showStatusLabel[show.status]} tone={showStatusTone[show.status]} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {editingShow && (
+        <BookingEventModal
+          show={editingShow}
+          onClose={() => setEditingShow(null)}
+          onSubmit={async (input) => {
+            await updateShow(editingShow.id, input)
+            setEditingShow(null)
+          }}
+          onDelete={async () => {
+            await deleteShow(editingShow.id)
+            setEditingShow(null)
+          }}
+        />
+      )}
 
       <div className="mt-2 flex gap-2">
         <input
