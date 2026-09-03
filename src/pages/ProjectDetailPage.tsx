@@ -12,6 +12,8 @@ import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
 import { ContentItemRow } from '../components/releases/ContentItemRow'
+import { ChecklistSection } from '../components/releases/ChecklistSection'
+import { PressKitSection } from '../components/releases/PressKitSection'
 import { releaseTypeLabel, songStageLabel, songStageTone } from '../lib/statusTone'
 import { formatDate, formatDateTime } from '../lib/dates'
 
@@ -90,6 +92,8 @@ export function ProjectDetailPage() {
         />
       </div>
 
+      <ChecklistSection releaseId={release.id} />
+
       <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Morceaux</h2>
       {includedSongs.length === 0 ? (
         <p className="text-sm text-zinc-500">Aucun morceau associé.</p>
@@ -125,6 +129,12 @@ export function ProjectDetailPage() {
           ))}
         </div>
       )}
+
+      <PressKitSection
+        release={release}
+        shareWithEmails={shareWithEmails}
+        onUpdate={(data) => updateRelease(release.id, data)}
+      />
 
       <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Événements</h2>
       {relatedEvents.length === 0 ? (
