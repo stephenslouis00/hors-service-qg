@@ -52,69 +52,76 @@ export function CalendarView({
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold capitalize text-zinc-900 dark:text-zinc-100">
-          {format(cursor, 'MMMM yyyy', { locale: fr })}
-        </h3>
-        <div className="flex gap-1">
-          <button
-            onClick={() => setCursor((c) => subMonths(c, 1))}
-            className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          >
-            ←
-          </button>
-          <button
-            onClick={() => setCursor(new Date())}
-            className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          >
-            Aujourd'hui
-          </button>
-          <button
-            onClick={() => setCursor((c) => addMonths(c, 1))}
-            className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          >
-            →
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-md border border-zinc-200 bg-zinc-200 text-xs dark:border-zinc-800 dark:bg-zinc-800">
-        {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
-          <div key={d} className="bg-zinc-50 px-2 py-1.5 text-center font-medium text-zinc-500 dark:bg-[#151b23] dark:text-zinc-400">
-            {d}
-          </div>
-        ))}
-        {days.map((day) => {
-          const key = format(day, 'yyyy-MM-dd')
-          const dayItems = itemsByDay.get(key) ?? []
-          return (
-            <div
-              key={key}
-              onClick={() => onDayClick?.(day)}
-              className={
-                'min-h-24 cursor-pointer bg-white p-1.5 dark:bg-[#0d1117] ' +
-                (!isSameMonth(day, cursor) ? 'opacity-40' : '') +
-                (isSameDay(day, new Date()) ? ' ring-1 ring-inset ring-blue-400' : '')
-              }
+      {/* Below sm, a 7-column grid has no room for legible pills — CalendarPage's
+          "Toutes les dates" list is the mobile view; this grid is desktop-only. */}
+      <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-500 sm:hidden">
+        📅 Vue calendrier — voir « Toutes les dates » ci-dessous sur mobile.
+      </p>
+      <div className="hidden sm:block">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold capitalize text-zinc-900 dark:text-zinc-100">
+            {format(cursor, 'MMMM yyyy', { locale: fr })}
+          </h3>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setCursor((c) => subMonths(c, 1))}
+              className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
             >
-              <div className="text-[11px] text-zinc-500 dark:text-zinc-500">{format(day, 'd')}</div>
-              <div className="mt-1 flex flex-col gap-1">
-                {dayItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onItemClick?.(item.id)
-                    }}
-                    className="block w-full truncate text-left"
-                  >
-                    <StatusPill label={item.label} tone={item.tone} />
-                  </button>
-                ))}
-              </div>
+              ←
+            </button>
+            <button
+              onClick={() => setCursor(new Date())}
+              className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+            >
+              Aujourd'hui
+            </button>
+            <button
+              onClick={() => setCursor((c) => addMonths(c, 1))}
+              className="rounded-md border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+            >
+              →
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-md border border-zinc-200 bg-zinc-200 text-xs dark:border-zinc-800 dark:bg-zinc-800">
+          {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
+            <div key={d} className="bg-zinc-50 px-2 py-1.5 text-center font-medium text-zinc-500 dark:bg-[#151b23] dark:text-zinc-400">
+              {d}
             </div>
-          )
-        })}
+          ))}
+          {days.map((day) => {
+            const key = format(day, 'yyyy-MM-dd')
+            const dayItems = itemsByDay.get(key) ?? []
+            return (
+              <div
+                key={key}
+                onClick={() => onDayClick?.(day)}
+                className={
+                  'min-h-24 cursor-pointer bg-white p-1.5 dark:bg-[#0d1117] ' +
+                  (!isSameMonth(day, cursor) ? 'opacity-40' : '') +
+                  (isSameDay(day, new Date()) ? ' ring-1 ring-inset ring-blue-400' : '')
+                }
+              >
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-500">{format(day, 'd')}</div>
+                <div className="mt-1 flex flex-col gap-1">
+                  {dayItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onItemClick?.(item.id)
+                      }}
+                      className="block w-full truncate text-left"
+                    >
+                      <StatusPill label={item.label} tone={item.tone} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

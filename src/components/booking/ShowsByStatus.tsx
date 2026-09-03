@@ -82,62 +82,64 @@ function ShowRow({
   const signupUrl = show.signupUrl && isHttpUrl(show.signupUrl) ? show.signupUrl : undefined
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-zinc-200 p-2.5 dark:border-zinc-800">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-2 rounded-md border border-zinc-200 p-2.5 dark:border-zinc-800 sm:flex-row sm:items-center sm:gap-3">
+      <div className="min-w-0 sm:flex-1">
+        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 sm:truncate">
           <EditableText value={show.venueName} onSave={(venueName) => onUpdate({ venueName })} />
         </p>
-        <p className="truncate text-xs text-zinc-500 dark:text-zinc-500">
+        <p className="text-xs text-zinc-500 dark:text-zinc-500 sm:truncate">
           {bookingEventTypeLabel[show.type]}
           {show.city && ` · ${show.city}`} · {formatDate(show.date)}
         </p>
       </div>
-      {releaseTitle && <StatusPill label={`🎵 ${releaseTitle}`} tone="purple" />}
-      <StatusPillSelect
-        value={show.status}
-        options={SHOW_STATUSES}
-        labelFor={(s) => showStatusLabel[s]}
-        toneFor={(s) => showStatusTone[s]}
-        onChange={(status) => onUpdate({ status })}
-      />
-      {signupUrl && (
-        <a
-          href={signupUrl}
-          target="_blank"
-          rel="noreferrer"
-          title="Lien d'inscription"
-          aria-label="Lien d'inscription"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-        >
-          <LinkExternalIcon />
-        </a>
-      )}
-      {venueEmail && (
+      <div className="flex flex-wrap items-center gap-2">
+        {releaseTitle && <StatusPill label={`🎵 ${releaseTitle}`} tone="purple" />}
+        <StatusPillSelect
+          value={show.status}
+          options={SHOW_STATUSES}
+          labelFor={(s) => showStatusLabel[s]}
+          toneFor={(s) => showStatusTone[s]}
+          onChange={(status) => onUpdate({ status })}
+        />
+        {signupUrl && (
+          <a
+            href={signupUrl}
+            target="_blank"
+            rel="noreferrer"
+            title="Lien d'inscription"
+            aria-label="Lien d'inscription"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          >
+            <LinkExternalIcon />
+          </a>
+        )}
+        {venueEmail && (
+          <button
+            onClick={() => openMailCompose(venueEmail, `${bookingEventTypeLabel[show.type]} · ${show.venueName}`)}
+            title={`Écrire à ${venueEmail}`}
+            aria-label={`Écrire à ${venueEmail}`}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          >
+            <MailIcon />
+          </button>
+        )}
         <button
-          onClick={() => openMailCompose(venueEmail, `${bookingEventTypeLabel[show.type]} · ${show.venueName}`)}
-          title={`Écrire à ${venueEmail}`}
-          aria-label={`Écrire à ${venueEmail}`}
+          onClick={() => setEditing(true)}
+          title="Détails"
+          aria-label="Voir les détails"
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
         >
-          <MailIcon />
+          <PencilIcon />
         </button>
-      )}
-      <button
-        onClick={() => setEditing(true)}
-        title="Détails"
-        aria-label="Voir les détails"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-      >
-        <PencilIcon />
-      </button>
-      <button
-        onClick={() => {
-          if (confirm(`Supprimer « ${show.venueName} » ?`)) onDelete()
-        }}
-        className="shrink-0 text-xs text-red-600 hover:underline dark:text-red-400"
-      >
-        Retirer
-      </button>
+        <button
+          onClick={() => {
+            if (confirm(`Supprimer « ${show.venueName} » ?`)) onDelete()
+          }}
+          className="shrink-0 text-xs text-red-600 hover:underline dark:text-red-400"
+        >
+          Retirer
+        </button>
+      </div>
 
       {editing && (
         <BookingEventModal

@@ -158,60 +158,67 @@ export function ChecklistSection({
               {!isCollapsed && (
                 <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
                   {section.items.map((item) => (
-                    <div key={item.id} className="group flex items-center gap-2.5 px-3 py-2">
-                      <CheckButton done={item.done} onClick={() => updateItem(item.id, { done: !item.done })} />
-                      <span
-                        className={clsx(
-                          'flex-1 text-sm',
-                          item.done ? 'text-zinc-400 line-through dark:text-zinc-600' : 'text-zinc-700 dark:text-zinc-300',
-                        )}
-                      >
-                        {item.label}
-                      </span>
-
-                      <span className="shrink-0 text-xs">
-                        <EditableDate
-                          value={item.date ?? null}
-                          onSave={(date) => updateItem(item.id, { date })}
-                          emptyLabel="+ date"
-                        />
-                      </span>
-
-                      {item.driveUrl ? (
-                        <span className="flex shrink-0 items-center gap-1">
-                          <a
-                            href={item.driveUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            title={item.driveName}
-                            className="flex max-w-[9rem] items-center gap-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
-                          >
-                            <PaperclipIcon className="shrink-0" />
-                            <span className="truncate">{item.driveName || 'Fichier'}</span>
-                          </a>
-                          <button
-                            onClick={() => updateItem(item.id, { driveUrl: '', driveName: '' })}
-                            title="Retirer ce fichier"
-                            aria-label="Retirer ce fichier"
-                            className="shrink-0 rounded px-1 text-xs text-zinc-400 opacity-0 hover:text-red-600 group-hover:opacity-100 dark:hover:text-red-400"
-                          >
-                            ✕
-                          </button>
+                    <div
+                      key={item.id}
+                      className="group flex flex-col gap-1.5 px-3 py-2 sm:flex-row sm:items-center sm:gap-2.5"
+                    >
+                      <div className="flex items-center gap-2.5 sm:min-w-0 sm:flex-1">
+                        <CheckButton done={item.done} onClick={() => updateItem(item.id, { done: !item.done })} />
+                        <span
+                          className={clsx(
+                            'flex-1 text-sm',
+                            item.done ? 'text-zinc-400 line-through dark:text-zinc-600' : 'text-zinc-700 dark:text-zinc-300',
+                          )}
+                        >
+                          {item.label}
                         </span>
-                      ) : (
-                        <DriveAttachButton
-                          compact
-                          shareWithEmails={shareWithEmails}
-                          onPicked={(file) => updateItem(item.id, { driveUrl: file.url, driveName: file.name })}
-                        />
-                      )}
+                      </div>
 
-                      <button
-                        onClick={() => deleteItem(item.id)}
-                        className="shrink-0 text-xs text-red-600 opacity-0 hover:underline group-hover:opacity-100 dark:text-red-400"
-                      >
-                        Retirer
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2 pl-7 sm:pl-0">
+                        <span className="shrink-0 text-xs">
+                          <EditableDate
+                            value={item.date ?? null}
+                            onSave={(date) => updateItem(item.id, { date })}
+                            emptyLabel="+ date"
+                          />
+                        </span>
+
+                        {item.driveUrl ? (
+                          <span className="flex shrink-0 items-center gap-1">
+                            <a
+                              href={item.driveUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={item.driveName}
+                              className="flex max-w-[9rem] items-center gap-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
+                            >
+                              <PaperclipIcon className="shrink-0" />
+                              <span className="truncate">{item.driveName || 'Fichier'}</span>
+                            </a>
+                            <button
+                              onClick={() => updateItem(item.id, { driveUrl: '', driveName: '' })}
+                              title="Retirer ce fichier"
+                              aria-label="Retirer ce fichier"
+                              className="shrink-0 rounded px-1 text-xs text-zinc-400 hover:text-red-600 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:text-red-400"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ) : (
+                          <DriveAttachButton
+                            compact
+                            shareWithEmails={shareWithEmails}
+                            onPicked={(file) => updateItem(item.id, { driveUrl: file.url, driveName: file.name })}
+                          />
+                        )}
+
+                        <button
+                          onClick={() => deleteItem(item.id)}
+                          className="shrink-0 text-xs text-red-600 hover:underline sm:opacity-0 sm:group-hover:opacity-100 dark:text-red-400"
+                        >
+                          Retirer
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
