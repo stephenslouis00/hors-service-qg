@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { watchCollectionGroup, orderByField, limitTo } from '../firebase/firestore'
 import type { SongFeedback } from '../types/song'
+import type { Release } from '../types/promo'
 import type { Tone } from '../lib/statusTone'
 import { useSongs } from './useSongs'
 import { useReleases } from './useReleases'
@@ -172,5 +173,16 @@ export function useDashboard() {
     }
   }, [songs, shows, releases])
 
-  return { upcoming, activity, stats, loading: songsLoading }
+  // The single most relevant release to spotlight at the top of the page —
+  // whichever unfinished one has the nearest release date; falls back to the
+  // oldest still-in-progress one when none has a date set yet.
+  const nextRelease = useMemo<Release | null>(() => {
+    const inProgress = releases.filter((r) => r.status !== 'released')
+    if (inProgress.length === 0) return null
+    const dated = inProgress.filter((r) => r.releaseDate != null).sort((a, b) => a.releaseDate! - b.releaseDate!)
+    if (dated.length > 0) return dated[0]
+    return [...inProgress].sort((a, b) => a.createdAt - b.createdAt)[0]
+  }, [releases])
+
+  return { upcoming, activity, stats, nextRelease, loading: songsLoading }
 }

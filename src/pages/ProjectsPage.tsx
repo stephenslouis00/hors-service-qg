@@ -16,8 +16,7 @@ import { useSongs } from '../hooks/useSongs'
 import { useAllowlist } from '../hooks/useAllowlist'
 import { useUnclassifiedLabel, useUpdateUnclassifiedLabel } from '../hooks/useSettings'
 import { useAuth } from '../contexts/AuthContext'
-import type { DrivePickedFile } from '../lib/googleDrive'
-import { PROMO_CONTENT_TYPES, type PromoContentItem, type PromoContentStatus, type PromoContentType, type Release } from '../types/promo'
+import { PROMO_CONTENT_TYPES, type PromoContentType, type Release } from '../types/promo'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -111,18 +110,10 @@ export function ProjectsPage() {
                 key={release.id}
                 release={release}
                 isOpen={expanded.has(release.id)}
-                items={items.filter((i) => i.releaseId === release.id)}
-                shareWithEmails={shareWithEmails}
                 onToggle={() => toggleExpanded(release.id)}
                 onRename={(title) => updateRelease(release.id, { title })}
                 onDelete={() => handleDelete(release.id, release.title)}
-                onAddContent={() => setContentModalReleaseId(release.id)}
-                onRenameContent={(id, title) => updateContent(id, { title })}
-                onStatusChange={(id, status) => updateContent(id, { status })}
                 onPinterestSave={(url) => updateRelease(release.id, { pinterestUrl: url })}
-                onAttachDrive={(item, file) => updateContent(item.id, { driveLinks: [...item.driveLinks, { url: file.url, name: file.name }] })}
-                onRemoveDrive={(item, url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
-                onPublishDateChange={(id, date) => updateContent(id, { publishDate: date })}
               />
             ))}
           </SortableContext>
@@ -214,33 +205,17 @@ export function ProjectsPage() {
 function ProjectFolder({
   release,
   isOpen,
-  items,
-  shareWithEmails,
   onToggle,
   onRename,
   onDelete,
-  onAddContent,
-  onRenameContent,
-  onStatusChange,
   onPinterestSave,
-  onAttachDrive,
-  onRemoveDrive,
-  onPublishDateChange,
 }: {
   release: Release
   isOpen: boolean
-  items: PromoContentItem[]
-  shareWithEmails: string[]
   onToggle: () => void
   onRename: (title: string) => void
   onDelete: () => void
-  onAddContent: () => void
-  onRenameContent: (id: string, title: string) => void
-  onStatusChange: (id: string, status: PromoContentStatus) => void
   onPinterestSave: (url: string) => void
-  onAttachDrive: (item: PromoContentItem, file: DrivePickedFile) => void
-  onRemoveDrive: (item: PromoContentItem, url: string) => void
-  onPublishDateChange: (id: string, date: number | null) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: release.id })
 
@@ -296,26 +271,6 @@ function ProjectFolder({
               createLabel="+ Créer un moodboard Pinterest"
             />
           </div>
-
-          <div className="mt-3 space-y-2">
-            {items.length === 0 && <p className="text-sm text-zinc-500">Aucun contenu pour ce projet.</p>}
-            {items.map((item) => (
-              <ContentItemRow
-                key={item.id}
-                item={item}
-                shareWithEmails={shareWithEmails}
-                onRename={(title) => onRenameContent(item.id, title)}
-                onStatusChange={(status) => onStatusChange(item.id, status)}
-                onAttachDrive={(file) => onAttachDrive(item, file)}
-                onRemoveDrive={(url) => onRemoveDrive(item, url)}
-                onPublishDateChange={(date) => onPublishDateChange(item.id, date)}
-              />
-            ))}
-          </div>
-
-          <Button className="mt-3" onClick={onAddContent}>
-            + Ajouter un contenu
-          </Button>
         </div>
       )}
     </Card>

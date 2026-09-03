@@ -43,20 +43,6 @@ export type ReleaseType = (typeof RELEASE_TYPES)[number]
 export const RELEASE_STATUSES = ['upcoming', 'released'] as const
 export type ReleaseStatus = (typeof RELEASE_STATUSES)[number]
 
-export interface PressKit {
-  bio: string
-  story: string
-  genreTags: string
-  quote: string
-  credits: string
-  priorPress: string
-  socials: string
-  contact: string
-  presaveUrl?: string
-  lyricVideoUrl?: string
-  pressShotUrl?: string
-}
-
 export interface Release {
   id: string
   title: string
@@ -66,7 +52,6 @@ export interface Release {
   status: ReleaseStatus
   coverImageDriveUrl?: string
   pinterestUrl?: string
-  pressKit?: PressKit
   order: number
   createdAt: number
   updatedAt: number

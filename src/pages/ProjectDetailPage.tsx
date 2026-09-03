@@ -1,6 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDeleteRelease, useReleases, useUpdateRelease } from '../hooks/useReleases'
-import { usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
 import { usePromoCalendarEvents } from '../hooks/useCalendarEvents'
 import { useAdminDocs } from '../hooks/useDocs'
 import { useSongs } from '../hooks/useSongs'
@@ -11,9 +10,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
-import { ContentItemRow } from '../components/releases/ContentItemRow'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
-import { PressKitSection } from '../components/releases/PressKitSection'
 import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
 import { releaseTypeLabel } from '../lib/statusTone'
 import { formatDate, formatDateTime } from '../lib/dates'
@@ -23,7 +20,6 @@ const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
 export function ProjectDetailPage() {
   const { releaseId } = useParams<{ releaseId: string }>()
   const { releases, loading } = useReleases()
-  const { items } = usePromoContent()
   const { events } = usePromoCalendarEvents()
   const { docs } = useAdminDocs()
   const { songs } = useSongs()
@@ -31,7 +27,6 @@ export function ProjectDetailPage() {
   const { user } = useAuth()
   const deleteRelease = useDeleteRelease()
   const updateRelease = useUpdateRelease()
-  const updateContent = useUpdatePromoContent()
   const navigate = useNavigate()
   const shareWithEmails = members.map((m) => m.email).filter((email) => email !== user?.email)
 
@@ -46,7 +41,6 @@ export function ProjectDetailPage() {
   }
 
   const includedSongs = songs.filter((s) => release.songIds.includes(s.id))
-  const relatedContent = items.filter((i) => i.releaseId === release.id)
   const relatedEvents = events.filter((e) => e.releaseId === release.id)
   const relatedDocs = docs.filter((d) => d.relatedReleaseId === release.id)
 
@@ -77,8 +71,17 @@ export function ProjectDetailPage() {
           Supprimer
         </Button>
       </div>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">Sortie le {formatDate(release.releaseDate)}</p>
-      <div className="mt-2">
+
+      <div className="mt-4">
+        <ChecklistSection
+          releaseId={release.id}
+          shareWithEmails={shareWithEmails}
+          onCompletionChange={(allDone) => updateRelease(release.id, { status: allDone ? 'released' : 'upcoming' })}
+        />
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-zinc-500 dark:text-zinc-400">Sortie le {formatDate(release.releaseDate)}</span>
         <EditableLink
           url={release.pinterestUrl}
           onSave={(pinterestUrl) => updateRelease(release.id, { pinterestUrl })}
@@ -89,11 +92,6 @@ export function ProjectDetailPage() {
           createLabel="+ Créer un moodboard Pinterest"
         />
       </div>
-
-      <ChecklistSection
-        releaseId={release.id}
-        onCompletionChange={(allDone) => updateRelease(release.id, { status: allDone ? 'released' : 'upcoming' })}
-      />
 
       <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Morceaux</h2>
       {includedSongs.length === 0 ? (
@@ -110,32 +108,6 @@ export function ProjectDetailPage() {
           ))}
         </div>
       )}
-
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Contenus promo</h2>
-      {relatedContent.length === 0 ? (
-        <p className="text-sm text-zinc-500">Aucun contenu associé.</p>
-      ) : (
-        <div className="space-y-2">
-          {relatedContent.map((item) => (
-            <ContentItemRow
-              key={item.id}
-              item={item}
-              shareWithEmails={shareWithEmails}
-              onRename={(title) => updateContent(item.id, { title })}
-              onStatusChange={(status) => updateContent(item.id, { status })}
-              onAttachDrive={(file) => updateContent(item.id, { driveLinks: [...item.driveLinks, { url: file.url, name: file.name }] })}
-              onRemoveDrive={(url) => updateContent(item.id, { driveLinks: item.driveLinks.filter((link) => link.url !== url) })}
-              onPublishDateChange={(date) => updateContent(item.id, { publishDate: date })}
-            />
-          ))}
-        </div>
-      )}
-
-      <PressKitSection
-        release={release}
-        shareWithEmails={shareWithEmails}
-        onUpdate={(data) => updateRelease(release.id, data)}
-      />
 
       <h2 className="mt-6 mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Événements</h2>
       {relatedEvents.length === 0 ? (

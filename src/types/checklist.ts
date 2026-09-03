@@ -6,6 +6,9 @@ export interface ChecklistItem {
   header: boolean
   order: number
   createdAt: number
+  /** '' means no file attached — never `undefined` (Firestore updateDoc rejects it). */
+  driveUrl?: string
+  driveName?: string
 }
 
 /** Seeded once per release, from the band's standard production/promotion pipeline. */
@@ -23,19 +26,7 @@ export const DEFAULT_CHECKLIST_TEMPLATE: { label: string; header?: boolean }[] =
   { label: 'Visualiseur 2 (pubs Meta)' },
   { label: 'Publication sur AWAL' },
   { label: 'Dossier de presse (EPK)', header: true },
-  { label: 'Bio courte et longue' },
-  { label: 'Photo presse' },
-  { label: 'Cover art' },
-  { label: 'Titre et date de sortie' },
-  { label: 'Tags genre / ambiance' },
-  { label: 'Histoire du morceau en une ligne' },
-  { label: 'Lien pre-save / sortie' },
-  { label: 'Réseaux sociaux et streaming' },
-  { label: 'Coordonnées de contact' },
-  { label: 'Crédits complets' },
-  { label: 'Presse antérieure (le cas échéant)' },
-  { label: 'Lyric video ou teaser' },
-  { label: 'Citation sur le morceau' },
+  { label: 'Créer le dossier de presse (EPK)' },
   { label: 'Envoi du dossier de presse (médias / radios / contacts)' },
   { label: 'Mise en place des pubs Meta (visualiseur 1 ou 2)' },
   { label: 'Argumentaire marketing AWAL', header: true },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
   useChecklist,
@@ -7,35 +7,40 @@ import {
   useUpdateChecklistItem,
   useDeleteChecklistItem,
 } from '../../hooks/useChecklist'
-import type { ChecklistItem } from '../../types/checklist'
+import { groupChecklistSections } from '../../lib/releasePhase'
+import { DriveAttachButton } from '../documents/DriveAttachButton'
+import { ChevronRightIcon, PaperclipIcon } from '../layout/icons'
 import { Button } from '../ui/Button'
 
-// Every item up to (not including) the next header belongs to the section
-// opened by the closest preceding header — undefined while still in the
-// implicit leading "Production" section, before any header has appeared.
-function sectionCounts(items: ChecklistItem[]) {
-  const sorted = [...items].sort((a, b) => a.order - b.order)
-  const counts = new Map<number, { done: number; total: number }>()
-  let currentHeaderIndex = -1
-  sorted.forEach((item, index) => {
-    if (item.header) {
-      currentHeaderIndex = index
-      return
-    }
-    if (currentHeaderIndex === -1) return
-    const entry = counts.get(currentHeaderIndex) ?? { done: 0, total: 0 }
-    entry.total += 1
-    if (item.done) entry.done += 1
-    counts.set(currentHeaderIndex, entry)
-  })
-  return { sorted, counts }
+function CheckButton({ done, onClick }: { done: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={done}
+      aria-label={done ? 'Marquer comme non terminé' : 'Marquer comme terminé'}
+      className={clsx(
+        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors',
+        done
+          ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500'
+          : 'border-zinc-300 hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500',
+      )}
+    >
+      {done && (
+        <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor" aria-hidden="true">
+          <path d="M6.5 11.5 3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5Z" />
+        </svg>
+      )}
+    </button>
+  )
 }
 
 export function ChecklistSection({
   releaseId,
+  shareWithEmails,
   onCompletionChange,
 }: {
   releaseId: string
+  shareWithEmails: string[]
   onCompletionChange?: (allDone: boolean) => void
 }) {
   const { items, loading } = useChecklist(releaseId)
@@ -44,12 +49,15 @@ export function ChecklistSection({
   const updateItem = useUpdateChecklistItem(releaseId)
   const deleteItem = useDeleteChecklistItem(releaseId)
   const [draft, setDraft] = useState('')
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const seededRef = useRef(false)
+  const wasCompleteRef = useRef<Map<string, boolean>>(new Map())
   const onCompletionChangeRef = useRef(onCompletionChange)
   onCompletionChangeRef.current = onCompletionChange
 
   const checkable = items.filter((i) => !i.header)
   const doneCount = checkable.filter((i) => i.done).length
+  const sections = useMemo(() => groupChecklistSections(items), [items])
 
   // The checklist is the single source of progress — every release gets one
   // automatically (no manual "create checklist" step to skip or forget), and
@@ -65,6 +73,37 @@ export function ChecklistSection({
     onCompletionChangeRef.current?.(doneCount === checkable.length)
   }, [doneCount, checkable.length])
 
+  // A section folds itself away the moment it's fully checked — including
+  // already-complete sections on first load — but never forces itself back
+  // open once a person has manually reopened it. The ref bookkeeping happens
+  // directly in the effect (not inside the setState updater below, which
+  // StrictMode invokes twice in dev and would corrupt it).
+  useEffect(() => {
+    const newlyCompleted: string[] = []
+    for (const section of sections) {
+      if (section.items.length === 0) continue
+      const complete = section.items.every((i) => i.done)
+      if (complete && wasCompleteRef.current.get(section.key) !== true) newlyCompleted.push(section.key)
+      wasCompleteRef.current.set(section.key, complete)
+    }
+    if (newlyCompleted.length > 0) {
+      setCollapsed((current) => {
+        const next = new Set(current)
+        newlyCompleted.forEach((key) => next.add(key))
+        return next
+      })
+    }
+  }, [items, sections])
+
+  function toggleCollapsed(key: string) {
+    setCollapsed((current) => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
   async function handleAdd() {
     const label = draft.trim()
     if (!label) return
@@ -73,11 +112,9 @@ export function ChecklistSection({
     setDraft('')
   }
 
-  const { sorted, counts } = sectionCounts(items)
-
   return (
     <div>
-      <div className="mt-6 mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Checklist</h2>
         {checkable.length > 0 && (
           <span className="text-xs text-zinc-500 dark:text-zinc-500">
@@ -85,49 +122,85 @@ export function ChecklistSection({
           </span>
         )}
       </div>
-      <div className="space-y-1">
-        {sorted.map((item, index) =>
-          item.header ? (
-            <p
-              key={item.id}
-              className="mt-3 flex items-baseline justify-between text-xs font-semibold uppercase tracking-wide text-zinc-500 first:mt-0 dark:text-zinc-500"
-            >
-              <span>{item.label}</span>
-              {counts.has(index) && (
-                <span className="font-normal normal-case tracking-normal text-zinc-400 dark:text-zinc-600">
-                  {counts.get(index)!.done}/{counts.get(index)!.total}
-                </span>
-              )}
-            </p>
-          ) : (
-            <div
-              key={item.id}
-              className="group flex items-center gap-2 rounded-md px-1 py-1 hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
-            >
-              <input
-                type="checkbox"
-                checked={item.done}
-                onChange={(e) => updateItem(item.id, { done: e.target.checked })}
-                className="h-4 w-4 shrink-0 cursor-pointer accent-blue-600"
-              />
-              <span
-                className={clsx(
-                  'flex-1 text-sm',
-                  item.done ? 'text-zinc-400 line-through dark:text-zinc-600' : 'text-zinc-700 dark:text-zinc-300',
-                )}
-              >
-                {item.label}
-              </span>
+
+      <div className="space-y-2">
+        {sections.map((section) => {
+          if (section.items.length === 0) return null
+          const sectionDone = section.items.filter((i) => i.done).length
+          const isCollapsed = collapsed.has(section.key)
+          return (
+            <div key={section.key} className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
               <button
-                onClick={() => deleteItem(item.id)}
-                className="shrink-0 text-xs text-red-600 opacity-0 hover:underline group-hover:opacity-100 dark:text-red-400"
+                onClick={() => toggleCollapsed(section.key)}
+                className="flex w-full items-center gap-1.5 bg-zinc-50 px-3 py-2 text-left hover:bg-zinc-100 dark:bg-zinc-900/60 dark:hover:bg-zinc-900"
               >
-                Retirer
+                <ChevronRightIcon className={clsx('shrink-0 text-zinc-400 transition-transform', !isCollapsed && 'rotate-90')} />
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                  {section.label}
+                </span>
+                <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-600">
+                  {sectionDone}/{section.items.length}
+                </span>
               </button>
+
+              {!isCollapsed && (
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
+                  {section.items.map((item) => (
+                    <div key={item.id} className="group flex items-center gap-2.5 px-3 py-2">
+                      <CheckButton done={item.done} onClick={() => updateItem(item.id, { done: !item.done })} />
+                      <span
+                        className={clsx(
+                          'flex-1 text-sm',
+                          item.done ? 'text-zinc-400 line-through dark:text-zinc-600' : 'text-zinc-700 dark:text-zinc-300',
+                        )}
+                      >
+                        {item.label}
+                      </span>
+
+                      {item.driveUrl ? (
+                        <span className="flex shrink-0 items-center gap-1">
+                          <a
+                            href={item.driveUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={item.driveName}
+                            className="flex max-w-[9rem] items-center gap-1 truncate rounded px-1.5 py-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            <PaperclipIcon className="shrink-0" />
+                            <span className="truncate">{item.driveName || 'Fichier'}</span>
+                          </a>
+                          <button
+                            onClick={() => updateItem(item.id, { driveUrl: '', driveName: '' })}
+                            title="Retirer ce fichier"
+                            aria-label="Retirer ce fichier"
+                            className="shrink-0 rounded px-1 text-xs text-zinc-400 opacity-0 hover:text-red-600 group-hover:opacity-100 dark:hover:text-red-400"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ) : (
+                        <DriveAttachButton
+                          compact
+                          shareWithEmails={shareWithEmails}
+                          onPicked={(file) => updateItem(item.id, { driveUrl: file.url, driveName: file.name })}
+                        />
+                      )}
+
+                      <button
+                        onClick={() => deleteItem(item.id)}
+                        className="shrink-0 text-xs text-red-600 opacity-0 hover:underline group-hover:opacity-100 dark:text-red-400"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          ),
-        )}
+          )
+        })}
       </div>
+
       <div className="mt-2 flex gap-2">
         <input
           value={draft}

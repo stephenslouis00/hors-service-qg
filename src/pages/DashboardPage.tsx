@@ -5,6 +5,7 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { StatTile } from '../components/ui/StatTile'
 import { Avatar } from '../components/ui/Avatar'
 import { EmptyState } from '../components/ui/EmptyState'
+import { ReleaseProgressLine } from '../components/releases/ReleaseProgressLine'
 import { formatDate, formatRelative } from '../lib/dates'
 
 const quickLinks = [
@@ -18,10 +19,12 @@ const quickLinks = [
 ].filter((link): link is { url: string; icon: string; label: string } => Boolean(link.url))
 
 export function DashboardPage() {
-  const { upcoming, activity, stats, loading } = useDashboard()
+  const { upcoming, activity, stats, nextRelease, loading } = useDashboard()
 
   return (
     <div className="p-4 md:p-6">
+      {nextRelease && <ReleaseProgressLine releaseId={nextRelease.id} title={nextRelease.title} />}
+
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Tableau de bord</h1>

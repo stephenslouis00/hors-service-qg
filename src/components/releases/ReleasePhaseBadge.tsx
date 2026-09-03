@@ -15,9 +15,7 @@ export function ReleasePhaseBadge({ releaseId, showProgress = false }: { release
     <span className="inline-flex items-center gap-1.5">
       <StatusPill label={phase.label} tone={phase.tone} />
       {showProgress && phase.totalCount > 0 && (
-        <span className="text-xs text-zinc-500 dark:text-zinc-500">
-          {phase.doneCount}/{phase.totalCount}
-        </span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-500">{phase.percent}%</span>
       )}
     </span>
   )
