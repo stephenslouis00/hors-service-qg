@@ -8,15 +8,12 @@ import { useAllowlist } from '../hooks/useAllowlist'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusPill } from '../components/ui/StatusPill'
 import { Card } from '../components/ui/Card'
-import { Button } from '../components/ui/Button'
-import { EditableText } from '../components/ui/EditableText'
 import { EditableLink } from '../components/ui/EditableLink'
 import { Spinner } from '../components/ui/Spinner'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { ChecklistSection } from '../components/releases/ChecklistSection'
-import { ReleasePhaseBadge } from '../components/releases/ReleasePhaseBadge'
+import { ReleaseVialHeader } from '../components/releases/ReleaseVialHeader'
 import { CheckCircleIcon } from '../components/layout/icons'
-import { releaseTypeLabel } from '../lib/statusTone'
 import { formatDateTime } from '../lib/dates'
 
 const pinterestUrl = import.meta.env.VITE_PINTEREST_URL as string | undefined
@@ -62,20 +59,12 @@ export function ProjectDetailPage() {
       <Link to="/releases/projects" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
         ← Sorties
       </Link>
-      <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <EditableText
-            as="h1"
-            value={release.title}
-            onSave={(title) => updateRelease(release.id, { title })}
-            className="text-xl font-semibold text-zinc-900 dark:text-zinc-50"
-          />
-          <span className="text-sm text-zinc-400 dark:text-zinc-500">{releaseTypeLabel[release.type]}</span>
-          <ReleasePhaseBadge releaseId={release.id} showProgress />
-        </div>
-        <Button variant="danger" onClick={handleDelete} className="self-start">
-          Supprimer
-        </Button>
+      <div className="mt-2">
+        <ReleaseVialHeader
+          release={release}
+          onRenameTitle={(title) => updateRelease(release.id, { title })}
+          onDelete={handleDelete}
+        />
       </div>
 
       <div className="mt-4">

@@ -11,6 +11,8 @@ export interface Song {
   createdAt: number
   createdBy: string
   updatedAt: number
+  /** Per-user Google Calendar event id, once synced via "Tout synchroniser sur HS". */
+  googleEventId?: Record<string, string>
 }
 
 export interface SongFeedback {

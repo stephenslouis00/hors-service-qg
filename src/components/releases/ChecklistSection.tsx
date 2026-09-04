@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import {
   useChecklist,
@@ -14,7 +15,7 @@ import { formatDate } from '../../lib/dates'
 import type { BookingShow } from '../../types/booking'
 import { DriveAttachButton } from '../documents/DriveAttachButton'
 import { BookingEventModal } from '../booking/BookingEventModal'
-import { ChevronRightIcon, LocationIcon, PaperclipIcon } from '../layout/icons'
+import { CalendarIcon, ChevronRightIcon, LocationIcon, PaperclipIcon } from '../layout/icons'
 import { Button } from '../ui/Button'
 import { StatusPill } from '../ui/StatusPill'
 import { EditableDate } from '../ui/EditableDate'
@@ -53,6 +54,7 @@ export function ChecklistSection({
   linkedShows?: BookingShow[]
   onCompletionChange?: (allDone: boolean) => void
 }) {
+  const navigate = useNavigate()
   const { items, loading } = useChecklist(releaseId)
   const seedChecklist = useSeedChecklist(releaseId)
   const addItem = useAddChecklistItem(releaseId)
@@ -183,6 +185,16 @@ export function ChecklistSection({
                             emptyLabel="+ date"
                           />
                         </span>
+                        <button
+                          onClick={() =>
+                            navigate('/calendar', { state: { releaseId, itemId: item.id, itemLabel: item.label } })
+                          }
+                          title="Choisir la date depuis le calendrier"
+                          aria-label="Choisir la date depuis le calendrier"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        >
+                          <CalendarIcon />
+                        </button>
 
                         {item.driveUrl ? (
                           <span className="flex shrink-0 items-center gap-1">

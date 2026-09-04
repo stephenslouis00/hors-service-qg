@@ -1,5 +1,5 @@
 import { Fragment, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import {
@@ -10,7 +10,7 @@ import {
 } from '../hooks/useCalendarEvents'
 import { useReleases } from '../hooks/useReleases'
 import { usePromoContent, useUpdatePromoContent } from '../hooks/usePromoContent'
-import { useSongs } from '../hooks/useSongs'
+import { useSongs, useUpdateSong } from '../hooks/useSongs'
 import { useCreateShow, useDeleteShow, useShows, useUpdateShow } from '../hooks/useShows'
 import { useChecklistCalendarItems, updateChecklistItemFields } from '../hooks/useChecklist'
 import { SHOW_STATUSES, type ShowStatus } from '../types/booking'
@@ -52,7 +52,16 @@ const FILTER_META: Record<FilterKind, { label: string; tone: Tone; icon: ReactNo
 }
 const FILTER_KINDS: FilterKind[] = ['show', 'promo-event', 'promo-content', 'release', 'checklist-task']
 
+interface ChecklistDatePickState {
+  releaseId: string
+  itemId: string
+  itemLabel: string
+}
+
 export function CalendarPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const pickingFor = (location.state as ChecklistDatePickState | null) ?? null
   const { events } = usePromoCalendarEvents()
   const createEvent = useCreatePromoCalendarEvent()
   const updateEvent = useUpdatePromoCalendarEvent()
@@ -61,6 +70,7 @@ export function CalendarPage() {
   const { items: contentItems } = usePromoContent()
   const updateContent = useUpdatePromoContent()
   const { songs } = useSongs()
+  const updateSong = useUpdateSong()
   const { shows } = useShows()
   const createShow = useCreateShow()
   const updateShow = useUpdateShow()
@@ -229,6 +239,41 @@ export function CalendarPage() {
           await updateChecklistItemFields(task.releaseId, task.id, { googleEventId: { ...task.googleEventId, [email]: id } })
         }
       }
+
+      for (const item of contentItems) {
+        if (item.publishDate == null) continue
+        const release = item.releaseId ? releases.find((r) => r.id === item.releaseId) : undefined
+        const input = {
+          title: `🎬 ${item.title}${release ? ` · ${release.title}` : ''}`,
+          startAt: item.publishDate,
+          endAt: item.publishDate,
+          allDay: true,
+        }
+        const existingId = item.googleEventId?.[email]
+        if (existingId) {
+          await updateGoogleCalendarEvent(accessToken, calendarId, existingId, input)
+        } else {
+          const id = await createGoogleCalendarEvent(accessToken, calendarId, input)
+          await updateContent(item.id, { googleEventId: { ...item.googleEventId, [email]: id } })
+        }
+      }
+
+      for (const song of songs) {
+        if (song.releaseDate == null) continue
+        const input = {
+          title: `💿 Sortie · ${song.title}`,
+          startAt: song.releaseDate,
+          endAt: song.releaseDate,
+          allDay: true,
+        }
+        const existingId = song.googleEventId?.[email]
+        if (existingId) {
+          await updateGoogleCalendarEvent(accessToken, calendarId, existingId, input)
+        } else {
+          const id = await createGoogleCalendarEvent(accessToken, calendarId, input)
+          await updateSong(song.id, { googleEventId: { ...song.googleEventId, [email]: id } })
+        }
+      }
     } catch (err) {
       const status = (err as Error & { status?: number }).status
       if (status === 401 && !forceReconnect) {
@@ -241,23 +286,43 @@ export function CalendarPage() {
     }
   }
 
+  async function handlePickDateForChecklist(day: Date) {
+    if (!pickingFor) return
+    await updateChecklistItemFields(pickingFor.releaseId, pickingFor.itemId, { date: day.getTime() })
+    navigate(`/releases/projects/${pickingFor.releaseId}`)
+  }
+
   return (
     <div className="p-4 md:p-6">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Calendrier</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Concerts, événements promo, contenus, sorties et tâches de checklist, au même endroit.</p>
+      {pickingFor ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-sm dark:border-blue-800 dark:bg-blue-950">
+          <span className="text-blue-800 dark:text-blue-300">
+            📅 Choisis une date pour « {pickingFor.itemLabel} » — clique sur un jour.
+          </span>
+          <button
+            onClick={() => navigate(`/releases/projects/${pickingFor.releaseId}`)}
+            className="text-xs font-medium text-blue-700 hover:underline dark:text-blue-300"
+          >
+            Annuler
+          </button>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => handleSyncAll(false)} disabled={syncingAll}>
-            {syncingAll ? 'Synchronisation…' : '↻ Tout synchroniser sur HS'}
-          </Button>
-          <Button onClick={() => { setPrefillDate(undefined); setShowCreateEvent(true) }}>+ Événement promo</Button>
-          <Button variant="primary" onClick={() => { setPrefillShowDate(undefined); setShowCreateShow(true) }}>
-            + Nouvel événement
-          </Button>
+      ) : (
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Calendrier</h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Concerts, événements promo, contenus, sorties et tâches de checklist, au même endroit.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => handleSyncAll(false)} disabled={syncingAll}>
+              {syncingAll ? 'Synchronisation…' : '↻ Tout synchroniser sur HS'}
+            </Button>
+            <Button onClick={() => { setPrefillDate(undefined); setShowCreateEvent(true) }}>+ Événement promo</Button>
+            <Button variant="primary" onClick={() => { setPrefillShowDate(undefined); setShowCreateShow(true) }}>
+              + Nouvel événement
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {syncAllError && <p className="mb-3 text-xs text-red-600 dark:text-red-400">{syncAllError}</p>}
 
@@ -271,7 +336,7 @@ export function CalendarPage() {
 
       <CalendarView
         items={items}
-        onDayClick={(day) => setDayPickerDate(format(day, 'yyyy-MM-dd'))}
+        onDayClick={pickingFor ? handlePickDateForChecklist : (day) => setDayPickerDate(format(day, 'yyyy-MM-dd'))}
         onItemClick={(id) => setSelectedId(id)}
       />
 
@@ -516,12 +581,32 @@ export function CalendarPage() {
             <div className="flex justify-end">
               <Button
                 variant="danger"
+                disabled={deleting}
                 onClick={async () => {
-                  await updateContent(selectedContent.id, { publishDate: null })
-                  setSelectedId(null)
+                  setDeleting(true)
+                  try {
+                    const myEventId = user?.email ? selectedContent.googleEventId?.[user.email] : undefined
+                    if (myEventId) {
+                      try {
+                        const accessToken = await getToken()
+                        const calendarId = await getOrCreateHsCalendar(accessToken)
+                        await deleteGoogleCalendarEvent(accessToken, calendarId, myEventId)
+                      } catch {
+                        // Best-effort: don't block clearing the date if Google's unreachable.
+                      }
+                    }
+                    const others = otherSyncedEmails(selectedContent.googleEventId, user?.email)
+                    await updateContent(selectedContent.id, { publishDate: null, googleEventId: {} })
+                    setSelectedId(null)
+                    if (others.length > 0) {
+                      alert(`Ce contenu était aussi sur l'agenda Google de : ${others.join(', ')}. Ils devront le supprimer eux-mêmes de leur côté.`)
+                    }
+                  } finally {
+                    setDeleting(false)
+                  }
                 }}
               >
-                Retirer du calendrier
+                {deleting ? 'Suppression…' : 'Retirer du calendrier'}
               </Button>
             </div>
           </div>
