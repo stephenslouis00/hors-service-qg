@@ -215,3 +215,12 @@ export function LinkExternalIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function GlobeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="none" stroke="currentColor" strokeWidth={1.4} {...props}>
+      <circle cx="8" cy="8" r="6.3" />
+      <path d="M1.700 8h12.600M8 1.700c3.600 3.400 3.600 9.200 0 12.600M8 1.700c-3.600 3.400-3.600 9.200 0 12.600" />
+    </Icon>
+  )
+}

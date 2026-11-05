@@ -10,6 +10,7 @@ import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { PromoContactsPage } from './pages/PromoContactsPage'
 import { BookingPage } from './pages/BookingPage'
 import { AdministrativePage } from './pages/AdministrativePage'
+import { SitePage } from './pages/SitePage'
 import { LegacySongRedirect, LegacyReleaseRedirect } from './pages/LegacyRedirects'
 
 export function AppRouter() {
@@ -33,6 +34,8 @@ export function AppRouter() {
             <Route path="booking" element={<BookingPage />} />
 
             <Route path="administrative" element={<AdministrativePage />} />
+
+            <Route path="site" element={<SitePage />} />
 
             {/* Legacy Production/Promotion routes — merged into "Sorties". */}
             <Route path="production" element={<Navigate to="/releases/projects" replace />} />

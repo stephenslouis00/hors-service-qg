@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { AdminIcon, CalendarIcon, DashboardIcon, LocationIcon, PromotionIcon } from './icons'
+import { AdminIcon, CalendarIcon, DashboardIcon, GlobeIcon, LocationIcon, PromotionIcon } from './icons'
 
 const sections = [
   { to: '/dashboard', label: 'Tableau de bord', icon: DashboardIcon, end: true },
@@ -7,6 +7,7 @@ const sections = [
   { to: '/booking', label: 'Booking', icon: LocationIcon },
   { to: '/calendar', label: 'Calendrier', icon: CalendarIcon },
   { to: '/administrative', label: 'Administratif', icon: AdminIcon },
+  { to: '/site', label: 'Site web', icon: GlobeIcon },
 ]
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
