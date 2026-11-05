@@ -65,6 +65,18 @@ export interface SiteNotice {
   text: string
 }
 
+export interface SiteContact {
+  name: string
+  sub: string
+  line: string
+  track: string
+}
+
+export interface SiteLegalPart {
+  title: string
+  lines: string[]
+}
+
 export interface SiteData {
   featured: string
   platforms: Partial<Record<SitePlatform, string>>
@@ -79,4 +91,10 @@ export interface SiteData {
   exLost: SiteNotice[]
   gameOverTitle: string
   gameOver: string[]
+  contacts: SiteContact[]
+  bio: string[]
+  booking: string
+  legal: SiteLegalPart[]
+  codes: Record<string, { text: string }>
+  ringtone: string
 }

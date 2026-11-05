@@ -11,7 +11,7 @@ const BRANCH = 'main'
 const REPO_KEY = 'hs-site-repo'
 const TOKEN_KEY = 'hs-site-token'
 export const DEFAULT_SITE_REPO = 'stephenslouis00/hors-service'
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://hors-service.stephenslouis00.workers.dev'
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL || 'https://hors-service.stephenslouis00.workers.dev'
 
 export interface SiteConnection {
   repo: string
@@ -202,6 +202,16 @@ export function siteProblems(data: SiteData): string[] {
       if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(message.time)) problems.push(`${name} : une heure est à écrire sous la forme 09:30.`)
       if (message.track && !hasSong(message.track)) problems.push(`${name} : un message pointe vers un morceau supprimé.`)
     }
+  }
+  for (const contact of data.contacts) {
+    if (!contact.name.trim() || !contact.line.trim()) problems.push('Un contact n’a pas de nom ou de phrase.')
+    if (!hasSong(contact.track)) problems.push(`Contact ${contact.name} : choisis une chanson.`)
+  }
+  if (data.bio.every((line) => !line.trim())) problems.push('La bio est vide.')
+  if (!/^\S+@\S+\.\S+$/.test(data.booking)) problems.push('L’adresse de booking n’est pas valide.')
+  if (data.legal.some((part) => !part.title.trim() || part.lines.every((line) => !line.trim()))) problems.push('Mentions légales : une partie est vide.')
+  for (const [code, value] of Object.entries(data.codes)) {
+    if (!/^[0-9*#]+$/.test(code) || !value.text.trim()) problems.push('Numéros secrets : numéro ou texte à corriger.')
   }
   if (data.exMessages.length === 0 || data.exMessages.some((text) => !text.trim())) problems.push('Textos à ton ex : il en faut au moins un, et aucun vide.')
   if (!data.exReply.trim()) problems.push('La réponse de ton ex est vide.')

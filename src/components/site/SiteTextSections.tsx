@@ -1,44 +1,8 @@
-import type { ReactNode } from 'react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { SectionHeading } from '../ui/SectionHeading'
-import type { SiteData, SiteMessage, SiteNotice, SiteSender } from '../../types/site'
-
-const inputClass =
-  'w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700'
-
-type Change = (update: (data: SiteData) => SiteData) => void
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">{label}</span>
-      {children}
-      {hint && <span className="mt-1 block text-xs text-zinc-500 dark:text-zinc-400">{hint}</span>}
-    </label>
-  )
-}
-
-function RemoveButton({ onClick, label = 'Supprimer' }: { onClick: () => void; label?: string }) {
-  return (
-    <Button variant="ghost" onClick={onClick}>
-      {label}
-    </Button>
-  )
-}
-
-function SongSelect({ data, value, allowNone, onChange }: { data: SiteData; value: string; allowNone?: boolean; onChange: (track: string) => void }) {
-  return (
-    <select className={inputClass} value={value} onChange={(event) => onChange(event.target.value)}>
-      {allowNone && <option value="">Aucune</option>}
-      {data.releases.map((release) => (
-        <option key={release.id} value={release.id}>
-          {release.title || 'Nouveau morceau'}
-        </option>
-      ))}
-    </select>
-  )
-}
+import type { SiteContact, SiteData, SiteMessage, SiteNotice, SiteSender } from '../../types/site'
+import { Field, RemoveButton, SongSelect, inputClass, type ChangeSite as Change } from './fields'
 
 export function CallSection({ data, change }: { data: SiteData; change: Change }) {
   const update = (fields: Partial<SiteData['call']>) => change((current) => ({ ...current, call: { ...current.call, ...fields } }))
@@ -62,6 +26,37 @@ export function CallSection({ data, change }: { data: SiteData; change: Change }
           <SongSelect data={data} value={data.call.track} onChange={(track) => update({ track })} />
         </Field>
       </Card>
+
+      <div className="mb-2 mt-8 flex items-center justify-between gap-3">
+        <SectionHeading className="">Contacts du téléphone</SectionHeading>
+        <Button onClick={() => change((current) => ({ ...current, contacts: [...current.contacts, { name: '', sub: '', line: '', track: current.featured }] }))}>+ Ajouter un contact</Button>
+      </div>
+      <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">Quand on appelle un contact, il dit sa phrase, puis sa chanson démarre.</p>
+      <div className="space-y-2">
+        {data.contacts.map((contact, index) => {
+          const updateContact = (fields: Partial<SiteContact>) =>
+            change((current) => ({ ...current, contacts: current.contacts.map((other, i) => (i === index ? { ...other, ...fields } : other)) }))
+          return (
+            <Card key={index} className="space-y-2 p-4">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Field label="Nom">
+                  <input className={inputClass} value={contact.name} onChange={(event) => updateContact({ name: event.target.value })} />
+                </Field>
+                <Field label="Détail">
+                  <input className={inputClass} value={contact.sub} onChange={(event) => updateContact({ sub: event.target.value })} />
+                </Field>
+              </div>
+              <Field label="Ce que dit le contact">
+                <textarea className={inputClass} rows={2} value={contact.line} onChange={(event) => updateContact({ line: event.target.value })} />
+              </Field>
+              <Field label="Chanson">
+                <SongSelect data={data} value={contact.track} onChange={(track) => updateContact({ track })} />
+              </Field>
+              <RemoveButton onClick={() => change((current) => ({ ...current, contacts: current.contacts.filter((_, i) => i !== index) }))} />
+            </Card>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -182,6 +177,64 @@ export function MessagesSection({ data, change }: { data: SiteData; change: Chan
         </Field>
       </Card>
       <TextList items={data.gameOver} addLabel="+ Ajouter un message" onChange={(gameOver) => change((current) => ({ ...current, gameOver }))} />
+    </div>
+  )
+}
+
+export function TextsSection({ data, change }: { data: SiteData; change: Change }) {
+  const codes = Object.entries(data.codes)
+  const setCodes = (next: [string, { text: string }][]) => change((current) => ({ ...current, codes: Object.fromEntries(next) }))
+  const updatePart = (index: number, title: string, lines: string[]) =>
+    change((current) => ({ ...current, legal: current.legal.map((part, i) => (i === index ? { title, lines } : part)) }))
+  return (
+    <div className="max-w-3xl">
+      <SectionHeading className="mb-2">Le groupe</SectionHeading>
+      <Card className="space-y-3 p-4">
+        <Field label="Bio" hint="Une ligne par paragraphe.">
+          <textarea
+            className={inputClass}
+            rows={5}
+            value={data.bio.join('\n')}
+            onChange={(event) => change((current) => ({ ...current, bio: event.target.value.split('\n') }))}
+          />
+        </Field>
+        <Field label="Adresse mail de booking">
+          <input className={inputClass} type="email" value={data.booking} onChange={(event) => change((current) => ({ ...current, booking: event.target.value }))} />
+        </Field>
+      </Card>
+
+      <div className="mb-2 mt-8 flex items-center justify-between gap-3">
+        <SectionHeading className="">Numéros secrets</SectionHeading>
+        <Button onClick={() => setCodes([...codes, ['', { text: '' }]])}>+ Ajouter un numéro</Button>
+      </div>
+      <div className="space-y-2">
+        {codes.map(([code, value], index) => (
+          <Card key={index} className="grid gap-2 p-4 sm:grid-cols-[8rem_1fr_auto] sm:items-end">
+            <Field label="Numéro">
+              <input className={inputClass} inputMode="numeric" value={code} onChange={(event) => setCodes(codes.map((entry, i) => (i === index ? [event.target.value, entry[1]] : entry)))} />
+            </Field>
+            <Field label="Ce qui s’affiche">
+              <input className={inputClass} value={value.text} onChange={(event) => setCodes(codes.map((entry, i) => (i === index ? [entry[0], { ...entry[1], text: event.target.value }] : entry)))} />
+            </Field>
+            <RemoveButton onClick={() => setCodes(codes.filter((_, i) => i !== index))} />
+          </Card>
+        ))}
+      </div>
+
+      <SectionHeading className="mb-2 mt-8">Mentions légales</SectionHeading>
+      <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">Change ces informations seulement si la situation de l’association change. Une ligne par paragraphe.</p>
+      <div className="space-y-2">
+        {data.legal.map((part, index) => (
+          <Card key={index} className="space-y-2 p-4">
+            <Field label="Titre">
+              <input className={inputClass} value={part.title} onChange={(event) => updatePart(index, event.target.value, part.lines)} />
+            </Field>
+            <Field label="Texte">
+              <textarea className={inputClass} rows={Math.max(3, part.lines.length + 1)} value={part.lines.join('\n')} onChange={(event) => updatePart(index, part.title, event.target.value.split('\n'))} />
+            </Field>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

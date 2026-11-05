@@ -9,6 +9,7 @@ import { SectionHeading } from '../components/ui/SectionHeading'
 import { ReleaseProgressLine } from '../components/releases/ReleaseProgressLine'
 import { PromotionIcon, LocationIcon, FileIcon } from '../components/layout/icons'
 import { formatDate, formatRelative } from '../lib/dates'
+import { SITE_URL } from '../lib/siteRepo'
 
 const quickLinks = [
   { url: import.meta.env.VITE_AWAL_URL as string | undefined, icon: '💿', label: 'AWAL' },
@@ -17,7 +18,7 @@ const quickLinks = [
   { url: import.meta.env.VITE_META_BUSINESS_SUITE_URL as string | undefined, icon: '📊', label: 'Meta Business Suite' },
   { url: import.meta.env.VITE_INSTAGRAM_URL as string | undefined, icon: '📸', label: 'Instagram' },
   { url: import.meta.env.VITE_TIKTOK_URL as string | undefined, icon: '🎵', label: 'TikTok' },
-  { url: import.meta.env.VITE_LINKTREE_URL as string | undefined, icon: '🔗', label: 'Linktree' },
+  { url: SITE_URL, icon: '🌐', label: 'Site web' },
 ].filter((link): link is { url: string; icon: string; label: string } => Boolean(link.url))
 
 export function DashboardPage() {
