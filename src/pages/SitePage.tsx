@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { Spinner } from '../components/ui/Spinner'
 import { CallSection, MessagesSection } from '../components/site/SiteTextSections'
+import { LeaderboardSection } from '../components/site/LeaderboardSection'
 import {
   MAX_CLIP_SECONDS,
   audioDuration,
@@ -31,6 +32,7 @@ const SECTIONS = [
   { id: 'photos', label: 'Photos' },
   { id: 'links', label: 'Liens' },
   { id: 'shows', label: 'Concerts' },
+  { id: 'scores', label: 'Classement' },
 ] as const
 type SectionId = (typeof SECTIONS)[number]['id']
 
@@ -450,6 +452,8 @@ export function SitePage() {
           ))}
         </div>
       )}
+
+      {section === 'scores' && <LeaderboardSection connection={connection} />}
 
       {section === 'call' && <CallSection data={draft} change={change} />}
 

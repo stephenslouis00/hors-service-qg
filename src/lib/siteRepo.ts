@@ -11,6 +11,7 @@ const BRANCH = 'main'
 const REPO_KEY = 'hs-site-repo'
 const TOKEN_KEY = 'hs-site-token'
 export const DEFAULT_SITE_REPO = 'stephenslouis00/hors-service'
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://hors-service.stephenslouis00.workers.dev'
 
 export interface SiteConnection {
   repo: string
@@ -207,4 +208,25 @@ export function siteProblems(data: SiteData): string[] {
   if (data.exLost.length === 0 || data.exLost.some((notice) => !notice.title.trim() || !notice.text.trim())) problems.push('Notifications après ton ex : il en faut au moins une, avec titre et texte.')
   if (!data.gameOverTitle.trim() || data.gameOver.length === 0 || data.gameOver.some((text) => !text.trim())) problems.push('Fin du jeu : titre et messages à compléter.')
   return problems
+}
+
+export interface SiteScore {
+  id: number
+  name: string
+  score: number
+}
+
+export async function loadSiteScores(): Promise<SiteScore[]> {
+  const response = await fetch(`${SITE_URL}/api/scores`, { cache: 'no-store' })
+  if (!response.ok) throw new Error('Classement indisponible pour le moment.')
+  return response.json() as Promise<SiteScore[]>
+}
+
+export async function deleteSiteScore(connection: SiteConnection, id: number) {
+  const response = await fetch(`${SITE_URL}/api/scores/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${connection.token}` },
+  })
+  if (response.status === 403) throw new Error('Ce jeton n’a pas le droit de modifier le classement.')
+  if (!response.ok) throw new Error('Suppression impossible pour le moment.')
 }
