@@ -3,6 +3,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { Spinner } from '../components/ui/Spinner'
+import { CallSection, MessagesSection } from '../components/site/SiteTextSections'
 import {
   MAX_CLIP_SECONDS,
   audioDuration,
@@ -25,6 +26,8 @@ const inputClass =
 const PLATFORM_KEYS = Object.keys(SITE_PLATFORMS) as SitePlatform[]
 const SECTIONS = [
   { id: 'music', label: 'Musiques' },
+  { id: 'call', label: 'Appel' },
+  { id: 'messages', label: 'Messages' },
   { id: 'photos', label: 'Photos' },
   { id: 'links', label: 'Liens' },
   { id: 'shows', label: 'Concerts' },
@@ -221,6 +224,11 @@ export function SitePage() {
         releases,
         featured: data.featured === release.id ? (releases[0]?.id ?? '') : data.featured,
         photos: data.photos.map((photo) => (photo.track === release.id ? { ...photo, track: releases[0]?.id ?? '' } : photo)),
+        call: data.call.track === release.id ? { ...data.call, track: releases[0]?.id ?? '' } : data.call,
+        inboxSenders: data.inboxSenders.map((sender) => ({
+          ...sender,
+          messages: sender.messages.map((message) => (message.track === release.id ? { ...message, track: releases[0]?.id ?? '' } : message)),
+        })),
       }
     })
   }
@@ -314,6 +322,11 @@ export function SitePage() {
         releases,
         featured: renamed.get(draft.featured) ?? draft.featured,
         photos: draft.photos.map((photo) => ({ ...photo, track: renamed.get(photo.track) ?? photo.track })),
+        call: { ...draft.call, track: renamed.get(draft.call.track) ?? draft.call.track },
+        inboxSenders: draft.inboxSenders.map((sender) => ({
+          ...sender,
+          messages: sender.messages.map((message) => ({ ...message, track: message.track ? (renamed.get(message.track) ?? message.track) : message.track })),
+        })),
         shows: [...draft.shows].sort((a, b) => a.date.localeCompare(b.date)),
       }
       const newHead = await publishSiteData(connection, { data, original, files: fileMoves, head, message: 'Mise à jour du site depuis HSHQ' })
@@ -358,14 +371,14 @@ export function SitePage() {
         </Button>
       </div>
 
-      <div className="mb-4 flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800">
         {SECTIONS.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => setSection(id)}
             className={
-              'border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ' +
+              'shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ' +
               (section === id
                 ? 'border-blue-500 text-zinc-900 dark:text-zinc-50'
                 : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100')
@@ -437,6 +450,10 @@ export function SitePage() {
           ))}
         </div>
       )}
+
+      {section === 'call' && <CallSection data={draft} change={change} />}
+
+      {section === 'messages' && <MessagesSection data={draft} change={change} />}
 
       {section === 'photos' && (
         <div className="space-y-3">

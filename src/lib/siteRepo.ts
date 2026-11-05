@@ -189,5 +189,22 @@ export function siteProblems(data: SiteData): string[] {
     if (!show.date || !show.city.trim()) problems.push('Un concert n’a pas de date ou de ville.')
     if (badUrl(show.url)) problems.push(`Concert à ${show.city} : le lien n’est pas valide.`)
   }
+  const hasSong = (id?: string) => data.releases.some((release) => release.id === id)
+  if (!data.call.name.trim()) problems.push('Appel : le nom est manquant.')
+  if (!hasSong(data.call.track)) problems.push('Appel : choisis la chanson.')
+  for (const sender of data.inboxSenders) {
+    const name = sender.from || 'Sans nom'
+    if (!sender.from.trim()) problems.push('Une personne de la messagerie n’a pas de nom.')
+    if (sender.messages.length === 0) problems.push(`${name} : ajoute au moins un message, ou supprime cette personne.`)
+    for (const message of sender.messages) {
+      if (!message.text.trim()) problems.push(`${name} : un message est vide.`)
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(message.time)) problems.push(`${name} : une heure est à écrire sous la forme 09:30.`)
+      if (message.track && !hasSong(message.track)) problems.push(`${name} : un message pointe vers un morceau supprimé.`)
+    }
+  }
+  if (data.exMessages.length === 0 || data.exMessages.some((text) => !text.trim())) problems.push('Textos à ton ex : il en faut au moins un, et aucun vide.')
+  if (!data.exReply.trim()) problems.push('La réponse de ton ex est vide.')
+  if (data.exLost.length === 0 || data.exLost.some((notice) => !notice.title.trim() || !notice.text.trim())) problems.push('Notifications après ton ex : il en faut au moins une, avec titre et texte.')
+  if (!data.gameOverTitle.trim() || data.gameOver.length === 0 || data.gameOver.some((text) => !text.trim())) problems.push('Fin du jeu : titre et messages à compléter.')
   return problems
 }
